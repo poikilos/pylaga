@@ -1,0 +1,1 @@
+A small galaga clone written in Python/Pygame, it uses pure software rendering (SDL) so it works without any specialized hardware, and since its python it also works on all platforms
