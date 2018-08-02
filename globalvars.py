@@ -1,6 +1,6 @@
 #2007-04-1 RJ Marsan
 #Pylaga
-#Original: 2007-02-20 Derek Mcdonald 
+#Original: 2007-02-20 Derek Mcdonald
 #Subclass of pylaga.py
 #################################################################################################################
 #
@@ -8,8 +8,8 @@
 #
 #       ALLLLLLLLLLLLLLLLLLLLLLLLLLLLL the variables (or LITERALS) in this entire game
 #       Everything that does not change, or starts at a certain value, SHOULD be here
-#	however, it has been decided that this should be majorly cut down.
-#	so...... DIE
+#    however, it has been decided that this should be majorly cut down.
+#    so...... DIE
 #
 #################################################################################
 #import pygame os and sys libraries
@@ -121,7 +121,7 @@ def load_file(filename):
         return pygame.image.load(imgfile).convert()
     except:
         print "Failed to load file "+filename
-	
+
 
 #loads the background file
 screen = pygame.Surface((WIN_RESX,WIN_RESY))

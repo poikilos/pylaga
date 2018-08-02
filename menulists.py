@@ -1,10 +1,10 @@
 #2007-04-1 RJ Marsan
 #Pylaga
-#Original: 2007-02-20 Derek Mcdonald 
+#Original: 2007-02-20 Derek Mcdonald
 #Subclass of pylaga.py
 #################################################################################################################
 #
-#	A few premade menu objects
+#    A few premade menu objects
 #
 #       Makes it easier on my brain
 #
@@ -20,14 +20,14 @@ from display import points
 #very effective
 class MenuLists:
             ############the menu functions###########
-	def init_menu(self):
+    def init_menu(self):
                 self.clear_screen()
-		menu=Menu(("Play!","About","Help","Exit"))
-		selection=-1
-		while True:
-			events=pygame.event.get()
-			selection=self.menu_action(events,menu)
-			if selection >= 0:
+        menu=Menu(("Play!","About","Help","Exit"))
+        selection=-1
+        while True:
+            events=pygame.event.get()
+            selection=self.menu_action(events,menu)
+            if selection >= 0:
                                 if selection == 0:
                                         break
                                 if selection == 1:
@@ -36,20 +36,20 @@ class MenuLists:
                                         menu.disp_help()
                                 if selection == 3:
                                         sys.exit(0)
-			globalvars.clock.tick(globalvars.FPS)
-		self.clear_screen()
-		pygame.mouse.set_visible(0)
-		pygame.event.set_grab(1)
-		
-	def exit_menu(self):
+            globalvars.clock.tick(globalvars.FPS)
+        self.clear_screen()
+        pygame.mouse.set_visible(0)
+        pygame.event.set_grab(1)
+
+    def exit_menu(self):
                 self.clear_screen()
                 pygame.mouse.set_visible(1)
-		menu=Menu(("Again?","About","Help","Exit","Score: %s"%points.get_points()))
-		selection=-1
-		while True:
-			events=pygame.event.get()
-			selection=self.menu_action(events,menu)
-			if selection >= 0:
+        menu=Menu(("Again?","About","Help","Exit","Score: %s"%points.get_points()))
+        selection=-1
+        while True:
+            events=pygame.event.get()
+            selection=self.menu_action(events,menu)
+            if selection >= 0:
                                 if selection == 0:
                                         break
                                 if selection == 1:
@@ -58,22 +58,22 @@ class MenuLists:
                                         menu.disp_help()
                                 if selection == 3:
                                         return False
-			globalvars.clock.tick(globalvars.FPS)
-		self.clear_screen()
-		pygame.mouse.set_visible(0)
-		return True
+            globalvars.clock.tick(globalvars.FPS)
+        self.clear_screen()
+        pygame.mouse.set_visible(0)
+        return True
 
 
-	def pause_menu(self):
+    def pause_menu(self):
                 self.clear_screen()
                 pygame.mouse.set_visible(1)
-		pygame.event.set_grab(0)
-		menu=Menu(("Resume","About","Help","Exit"))
-		selection=-1
-		while True:
-			events=pygame.event.get()
-			selection=self.menu_action(events,menu)
-			if selection >= 0:
+        pygame.event.set_grab(0)
+        menu=Menu(("Resume","About","Help","Exit"))
+        selection=-1
+        while True:
+            events=pygame.event.get()
+            selection=self.menu_action(events,menu)
+            if selection >= 0:
                                 if selection == 0:
                                         break
                                 if selection == 1:
@@ -82,20 +82,20 @@ class MenuLists:
                                         menu.disp_help()
                                 if selection == 3:
                                         sys.exit(0)
-			globalvars.clock.tick(globalvars.FPS)
-		self.clear_screen()
-		pygame.mouse.set_visible(0)
-		pygame.event.set_grab(1)
+            globalvars.clock.tick(globalvars.FPS)
+        self.clear_screen()
+        pygame.mouse.set_visible(0)
+        pygame.event.set_grab(1)
 
-	def menu_action(self, events, menu):
+    def menu_action(self, events, menu):
                 selection=-1
                 pygame.event.pump()
                 for event in events:
                         if event.type == pygame.KEYDOWN:
                                 if event.key == pygame.K_q:
                                         sys.exit(0)
-				if event.key == pygame.K_ESCAPE:
-					sys.exit(0)
+                if event.key == pygame.K_ESCAPE:
+                    sys.exit(0)
                                 if event.key == pygame.K_UP:
                                         menu.change_selection_up()
                                 if event.key == pygame.K_DOWN:
@@ -110,10 +110,10 @@ class MenuLists:
                                         selection=menu.get_selection()
                 return selection
         ############the menu functions###########
-	
-	def clear_screen(self):
+
+    def clear_screen(self):
                 globalvars.surface.fill(globalvars.bgcolor)
-		pygame.display.flip()
-		
+        pygame.display.flip()
+
 global menulists
 menulists=MenuLists()
