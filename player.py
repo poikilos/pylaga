@@ -2,9 +2,8 @@
 #Pylaga
 #Original: 2007-02-20 Derek Mcdonald
 #Subclass of pylaga.py
-#################################################################################################################
 #
-#    The player class
+# The player class
 #
 #
 #
@@ -60,10 +59,8 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):  #yay for update...
         if self.state > 0:
-            self.image=playership[self.state/explosion_speed]
+            self.image=playership[int(self.state/explosion_speed)]
             self.state+=1
             if self.state >= len(playership)*explosion_speed:
                 self.state=0
                 self.image=playership[0]
-###################
-

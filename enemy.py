@@ -2,11 +2,8 @@
 #Pylaga
 #Original: 2007-02-20 Derek Mcdonald
 #Subclass of pylaga.py
-#################################################################################################################
 #
 #    The All Important Enemy class, and its manager EnemyManager
-#
-#
 #
 #
 #import pygame os and sys libraries
@@ -14,11 +11,9 @@ import pygame, os, sys, math, random
 import globalvars
 from bullet import EnemyBullet
 
-
-#####################
-class EnemyManager(pygame.sprite.RenderUpdates):
+class EnemyManager(pygame.sprite.Group):
     def __init__(self):
-        pygame.sprite.RenderUpdates.__init__(self)
+        pygame.sprite.Group.__init__(self)
         self.asdf=0
         self.transition_speed=5
         self.transition_time=150/self.transition_speed
@@ -37,8 +32,7 @@ class EnemyManager(pygame.sprite.RenderUpdates):
             for e in self:
                 e.update(0)
 
-#################
-#origional program had a few boring enemy lines, so i made it an object, cuz objects are cool
+#made into class as of "pylaga" fork
 class Enemy(pygame.sprite.Sprite):
     enx=0
     eny=30
@@ -113,6 +107,3 @@ class Enemy(pygame.sprite.Sprite):
         tempb=EnemyBullet(shotslist)
         tempb.set_pos(self.rect.left+self.rect.width/2,self.rect.bottom)
         shotslist.add(tempb)
-###################
-
-

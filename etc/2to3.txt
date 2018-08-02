@@ -1,0 +1,5 @@
+REM The following steps were used to convert the project to python3:
+SET PROJECTFOLDERNAME=pylaga-py3
+SET PROJECTFOLDERFULLNAME=Z:\Projects-pygame\%PROJECTFOLDERNAME%
+IF EXIST "%PROJECTFOLDERNAME%" SET PROJECTFOLDERFULLNAME=PROJECTFOLDERNAME
+python "C:\Kivy-1.8.0-py3.3-win32\Python33\Tools\Scripts\2to3.py" -w "%PROJECTFOLDERFULLNAME%"

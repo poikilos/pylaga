@@ -2,16 +2,13 @@
 #Pylaga
 #Original: 2007-02-20 Derek Mcdonald
 #Subclass of pylaga.py
-#################################################################################################################
 #
-#    The Background Manager and its subclass, star
-#    Also the global object bgstars
-#
-#
+#        The Background Manager and its subclass, star
+#        Also the global object bgstars
 #
 #import pygame os and sys libraries
 import pygame, os, sys, math, random, globalvars
-#####################
+
 #makes a globalvars.background that moves and stuff
 class BackgroundManager(pygame.sprite.Sprite):
     stars=[ ]
@@ -32,7 +29,7 @@ class BackgroundManager(pygame.sprite.Sprite):
             else:
                 self.last_stars[counter].topleft=star.topleft
                 star.top+=star.speed
-                #print "%s %s"%(star,self.last_stars[counter])
+                #print(str(star)+str(self.last_stars[counter]))
 
 
     def draw(self):

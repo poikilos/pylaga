@@ -3,7 +3,7 @@
 #!/usr/bin/env python
 #2007-04-1 RJ Marsan
 #Pylaga
-#Original: 2007-02-20 Derek Mcdonald
+#Original: 2007-02-20 Derek Mcdonald 
 #Main class
 #################################################################################################################
 #
@@ -23,7 +23,7 @@ def exception_handler():
     exception_message = '%s:\n%s\n\n%s\n"%s"'
     message = exception_message % (str(type), str(info), tracetext, tracetop[3])
     if type not in (KeyboardInterrupt, SystemExit):
-        print message
+        print(message)
     raise
 
 #import pygame os and sys libraries
@@ -44,7 +44,8 @@ except:
     exception_handler()
     sys.exit(0)
 
-if not pygame.font: print 'Warning, fonts disabled'
+
+if not pygame.font: print('Warning, fonts disabled')
 #################################################################################################################
 #
 #

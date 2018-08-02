@@ -8,8 +8,8 @@
 #
 #       ALLLLLLLLLLLLLLLLLLLLLLLLLLLLL the variables (or LITERALS) in this entire game
 #       Everything that does not change, or starts at a certain value, SHOULD be here
-#    however, it has been decided that this should be majorly cut down.
-#    so...... DIE
+#       however, it has been decided that this should be majorly cut down. 
+#       so...... DIE
 #
 #################################################################################
 #import pygame os and sys libraries
@@ -22,6 +22,10 @@ global VERSION
 VERSION="Pylaga .11"
 global DATADIR
 DATADIR="data/"
+
+ced = os.path.dirname(__file__) #current executable directory
+DATADIR = os.path.join(ced,DATADIR)
+
 global FPS
 FPS=60
 global WIN_RESX
@@ -50,8 +54,8 @@ xmin = left_boarder
 #and then all one needs to do is go through these arrays and call functions
 #and stuff. it makes sense in here *points to brain*
 global player_list, side_panel
-player_list=pygame.sprite.RenderUpdates()
-side_panel= pygame.sprite.RenderUpdates()
+player_list=pygame.sprite.Group()
+side_panel= pygame.sprite.Group()
 #bullet's initial speed 'n shape
 global BULLET_SPEED, BULLET_WIDTH
 BULLET_SPEED=10
@@ -96,7 +100,7 @@ star_color=(150,150,150)
 global bgcolor, sidepanelcolor
 bgcolor=(0,0,0)
 sidepanelcolor=(128,128,128)
-menucolor=(128,128,128)
+menucolor=(195,227,247)
 
 #started out random, now is an important part, its the frames that have gone by
 #helps so not everything is rendered every frame
@@ -118,9 +122,9 @@ surface = pygame.display.get_surface()
 def load_file(filename):
     try:
         imgfile=os.path.join(filename)
-        return pygame.image.load(imgfile).convert()
+        return pygame.image.load(imgfile).convert_alpha()
     except:
-        print "Failed to load file "+filename
+        print("Failed to load file "+filename)
 
 
 #loads the background file
@@ -128,22 +132,22 @@ screen = pygame.Surface((WIN_RESX,WIN_RESY))
 screen.fill(bgcolor)
 
 #loads logo
-logo=load_file(DATADIR+"logo.jpeg")
+logo=load_file(DATADIR+"screen-intro.png")
 
 #array to hold some more animations
 global playership
 playership=[ ]
 #loads playership image
-playership.append(load_file(DATADIR+'pship.bmp'))
-playership.append(load_file(DATADIR+'pship1.bmp'))
-playership.append(load_file(DATADIR+'pship2.bmp'))
-playership.append(load_file(DATADIR+'pship3.bmp'))
+playership.append(load_file(DATADIR+'pship.png'))
+playership.append(load_file(DATADIR+'pship1.png'))
+playership.append(load_file(DATADIR+'pship2.png'))
+playership.append(load_file(DATADIR+'pship3.png'))
 
 #loads enemy ship image
-enemyship=(load_file(DATADIR+'eship.bmp'))
+enemyship=(load_file(DATADIR+'eship.png'))
 
 #loads laser, laser1 and all other images associated with pshoot
-shot = load_file(DATADIR+'laser.bmp')
+shot = load_file(DATADIR+'laser.png')
 eshot = load_file(DATADIR+'elaser.bmp')
 
 #array to hold the explosions
@@ -159,4 +163,4 @@ explosions.append(load_file(DATADIR+'explosion5.bmp'))
 #initialize pygame
 pygame.init()
 
-print "Global Variables Loaded"
+#print("Global Variables Loaded")
