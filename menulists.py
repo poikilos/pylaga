@@ -24,6 +24,10 @@ from display import points
 # very effective
 class MenuLists:
     # region the menu functions
+
+    def __init__(self):
+        self._vars = {}
+
     def init_menu(self):
         self.clear_screen()
         menu = Menu(("PLAY", "ABOUT", "HELP", "EXIT"))
@@ -38,12 +42,20 @@ class MenuLists:
                     menu.disp_about()
                 if selection == 2:
                     menu.disp_help()
-                if selection == 3:
-                    sys.exit(0)
+                if selection == 3:  # Chose EXIT
+                    self.set_bool('exit', True)
+                    break
+                    # fall through to on_exit handler
             globalvars.clock.tick(globalvars.FPS)
         self.clear_screen()
         pygame.mouse.set_visible(0)
-        pygame.event.set_grab(1)
+        pygame.event.set_grab(not self.get_bool('exit'))
+
+    def get_bool(self, name):
+        return self._vars.get(name)
+
+    def set_bool(self, name, v):
+        self._vars[name] = v is True
 
     def exit_menu(self):
         self.clear_screen()
@@ -56,13 +68,14 @@ class MenuLists:
             selection = self.menu_action(events, menu)
             if selection >= 0:
                 if selection == 0:
-                        break
+                    break
                 if selection == 1:
-                        menu.disp_about()
+                    menu.disp_about()
                 if selection == 2:
-                        menu.disp_help()
+                    menu.disp_help()
                 if selection == 3:
-                        return False
+                    self.set_bool('exit', True)
+                    return False
             globalvars.clock.tick(globalvars.FPS)
         self.clear_screen()
         pygame.mouse.set_visible(0)
@@ -71,7 +84,7 @@ class MenuLists:
     def pause_menu(self):
         self.clear_screen()
         pygame.mouse.set_visible(1)
-        pygame.event.set_grab(0)
+        pygame.event.set_grab(False)
         menu = Menu(("RESUME", "ABOUT", "HELP", "EXIT"))
         selection = -1
         while True:
@@ -79,17 +92,19 @@ class MenuLists:
             selection = self.menu_action(events, menu)
             if selection >= 0:
                 if selection == 0:
-                        break
+                    break
                 if selection == 1:
-                        menu.disp_about()
+                    menu.disp_about()
                 if selection == 2:
-                        menu.disp_help()
+                    menu.disp_help()
                 if selection == 3:
-                        sys.exit(0)
+                    self.set_bool('exit', True)
+                    break
+                    # fall through to on_exit handler
             globalvars.clock.tick(globalvars.FPS)
         self.clear_screen()
         pygame.mouse.set_visible(0)
-        pygame.event.set_grab(1)
+        pygame.event.set_grab(not self.get_bool('exit'))
 
     def menu_action(self, events, menu):
         selection = -1
@@ -118,6 +133,3 @@ class MenuLists:
     def clear_screen(self):
         globalvars.surface.fill(globalvars.bgcolor)
         pygame.display.flip()
-
-global menulists
-menulists = MenuLists()

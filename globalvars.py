@@ -24,7 +24,7 @@ import random
 # wow i really dont know what most of these do anymore
 # TODO: clean this up
 global VERSION
-VERSION = "Pylaga .11"
+VERSION = "Pylaga 0.2.1"
 global DATADIR
 DATADIR = "data/"
 

@@ -23,7 +23,7 @@ try:
     from stage import Stage
     from display import *
     from menu import Menu
-    from menulists import MenuLists, menulists
+    from menulists import MenuLists
 #    import ecollision
 except Exception as e:
     print("Could not finish import: "+str(e))
@@ -31,6 +31,10 @@ except Exception as e:
 if not pygame.font:
     print('Warning, fonts disabled')
 
+try:
+    input = raw_input
+except:
+    pass  # python3
 
 ###
 # Now for the actual game class
@@ -39,6 +43,7 @@ class World:
     # its important.
     def __init__(self, parent):
         self.parent = parent
+        self.menus = None
         globalvars.asdf = 0
         self.lagcount = 0
         self.leftkeydown = 0
@@ -48,6 +53,9 @@ class World:
         self.stage = Stage(self.list_enemys, globalvars.player_list)
         self.list_allie_shots = pygame.sprite.Group()
         self.enemy_shots = pygame.sprite.Group()
+
+    def on_exit(self):
+        print("on_exit fired.")
 
     # Clears all the variables
     def clear_vars(self):
@@ -217,7 +225,9 @@ class World:
         #                    # this line
         for event in events:
             if event.type == QUIT:
+                self.on_exit()
                 sys.exit(0)
+
             if event.type == pygame.MOUSEMOTION:
                 pygame.event.get()
                 tempx = (pygame.mouse.get_pos()[0] -
@@ -241,20 +251,18 @@ class World:
                         # we've passed all sanity checks so just move it
                     self.player.move(tempx, globalvars.y)
 
-            # *if the mouse is clicked, shoot!
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.pshoot(self.player.rect.centerx -
                             globalvars.BULLET_WIDTH / 2,
                             globalvars.y)
 
-            # *if 'q' is pressed, quit
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
-                    sys.exit(0)
+                    self.menus.pause_menu()  # sys.exit(0)
                 if event.key == pygame.K_p:
-                    menulists.pause_menu()
+                    self.menus.pause_menu()
                 if event.key == pygame.K_ESCAPE:
-                    menulists.pause_menu()  # sys.exit(0)
+                    self.menus.pause_menu()  # sys.exit(0)
                 # keyboard controls
                 if event.key == pygame.K_LEFT:
                     self.leftkeydown = 1
@@ -265,7 +273,6 @@ class World:
                                 globalvars.BULLET_WIDTH / 2,
                                 globalvars.y)
 
-            # keyboard controls
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     self.leftkeydown = 0
@@ -281,7 +288,8 @@ class World:
 
     ####################################################################
 
-    def start(self):
+    def start(self, menus):
+        self.menus = menus
         self.clear_vars()
         self.player = Player()
         globalvars.player_list.add(self.player)
@@ -291,7 +299,7 @@ class World:
     # Yeah see this one does all of the work
     def loop(self):
         # Start loop
-        while self.again():
+        while (not self.menus.get_bool('exit')) and (self.again()):
             # Refresh globalvars.screen periodically
             if globalvars.asdf >= globalvars.REFRESH_TIME:
                 # self.clear_screen()
@@ -323,3 +331,7 @@ class World:
             #   # self.dispvars()
             #   # self.lagcount += 1
             # print globalvars.clock.get_fps()
+
+if __name__ == "__main__":
+    print("run main.py instead.")
+    input("press enter to exit...")

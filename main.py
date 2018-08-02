@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# Galaga VERSION .05!
-# !/usr/bin/env python
 # 2007-04-1 RJ Marsan
 # Pylaga
 # Original: 2007-02-20 Derek Mcdonald
@@ -48,10 +46,10 @@ try:
     from display import *
     from menu import Menu
     from game import World
-    from menulists import MenuLists, menulists
+    from menulists import MenuLists
 except:
     exception_handler()
-    sys.exit(0)
+    sys.exit(1)
 
 
 if not pygame.font:
@@ -67,15 +65,15 @@ if not pygame.font:
 class App:
     def __init__(self):
         self.world = World(self)
-        self.menu = menulists
-
-        self.menu.init_menu()
-        self.world.start()
-        while self.menu.exit_menu():
-            self.world.start()
+        self.menus = MenuLists()
+        self.menus.init_menu()
+        self.world.start(self.menus)
+        while ((not self.menus.get_bool('exit')) and
+               (self.menus.exit_menu())):
+            self.world.start(self.menus)
+        self.world.on_exit()
 
 
 # the one line that starts the game
 # if __name__ == "__main__":
 app = App()
-print("disposing app.")
