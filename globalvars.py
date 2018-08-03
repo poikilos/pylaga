@@ -1,30 +1,21 @@
-# 2007-04-1 RJ Marsan
-# Pylaga
-# Original: 2007-02-20 Derek Mcdonald
-# Subclass of pylaga.py
-###############################################################################
-#
-#
-# TODO: remove globals
-# ALLLLLLLLLLLLLLLLLLLLLLLLLLLLL the variables (or LITERALS) in this
-# entire game
-# Everything that does not change, or starts at a certain value, SHOULD
-# be here however, it has been decided that this should be majorly cut
-# down.
-# so...... DIE
-#
-###############################################################################
+"""global variables for pylaga
+
+define global variables
+wow i really dont know what most of these do anymore
+"""
+__author__ = ("2007-02-20 Derek Mcdonald (original),"
+              " 2007-04-1 RJ Marsan,"
+              " 2018 poikilos (Jake Gustafson)")
+__version__ = '0.2.1'
+__all__ = []
+
 import pygame
 import os
 import sys
 import math
 import random
 
-# define global variables
-# wow i really dont know what most of these do anymore
-# TODO: clean this up
-global VERSION
-VERSION = "Pylaga 0.2.1"
+# TODO: deprecate globals
 global DATADIR
 DATADIR = "data/"
 
@@ -121,7 +112,7 @@ defaultfont = "freesansbold.ttf"
 
 # create window and set up background image
 window = pygame.display.set_mode((WIN_RESX, WIN_RESY))
-pygame.display.set_caption(VERSION)
+pygame.display.set_caption("Pylaga")
 surface = pygame.display.get_surface()
 
 

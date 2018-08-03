@@ -1,33 +1,34 @@
-# 2007-04-1 RJ Marsan
-# Pylaga
-# Original: 2007-02-20 Derek Mcdonald
-# world.py (formerly game.py)
-# Subclass of pylaga.py
-###
-#
-#
-# arguably the most important class, this is the game object
-# it *is* the game. in an object.
-#
-try:
-    import pygame
-    import os
-    import sys
-    import math
-    import random
-    from pygame.locals import*
-    import globalvars
-    from bullet import Bullet, EnemyBullet
-    from background import BackgroundManager, bgstars
-    from enemy import Enemy, EnemyManager
-    from player import Player
-    from stage import Stage
-    from display import *
-    from menu import Menu
-    from menulists import MenuLists
+#!/usr/bin/env python
+"""This is the game World for pylaga
+
+Arguably the most important class, this is the game object--
+it *is* the game...in an object.
+world.py (formerly game.py)
+"""
+
+__author__ = ("2007-02-20 Derek Mcdonald (original),"
+              " 2007-04-1 RJ Marsan,"
+              " 2018 poikilos (Jake Gustafson)")
+__version__ = '0.2.1'
+__all__ = []
+
+import pygame
+import os
+import sys
+import math
+import random
+import time
+from pygame.locals import*
+import globalvars
+from bullet import Bullet, EnemyBullet
+from background import BackgroundManager, bgstars
+from enemy import Enemy, EnemyManager
+from player import Player
+from stage import Stage
+from display import *
+from menu import Menu
+from menulists import MenuLists
 #    import ecollision
-except Exception as e:
-    print("Could not finish import: "+str(e))
 
 if not pygame.font:
     print('Warning, fonts disabled')
@@ -37,7 +38,7 @@ try:
 except:
     pass  # python3
 
-###
+
 # Now for the actual game class
 class World:
     # This is the __init__
@@ -334,9 +335,10 @@ class World:
             # print globalvars.clock.get_fps()
 
 if __name__ == "__main__":
-    print("run main.py instead.")
+    msg = "run main.py instead."
+    print(msg)
     font = pygame.font.Font(globalvars.defaultfont, 40)
-    warningimg = font.render("run main.py instead.", True, (192, 192, 192))
+    warningimg = font.render(msg, True, (192, 192, 192))
     warningrect = warningimg.get_rect()
     warningrect.move_ip(10, 5)
     warningimg.set_alpha(10)
@@ -350,5 +352,4 @@ if __name__ == "__main__":
                 # self.on_exit()
                 run = False
                 # sys.exit(0)
-
-    #input("press enter to exit...")
+    time.sleep(2)

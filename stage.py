@@ -1,13 +1,16 @@
-# 2007-04-1 RJ Marsan
-# Pylaga
-# Original: 2007-02-20 Derek Mcdonald
-# Subclass of pylaga.py
-#
-#        stage manager
-#
-#        Needs lots of improvement
-#        ...thats never a good thing to hear
-#
+#!/usr/bin/env python
+"""stage manager for pylaga
+
+Needs lots of improvement
+...thats never a good thing to hear
+"""
+
+__author__ = ("2007-02-20 Derek Mcdonald (original),"
+              " 2007-04-1 RJ Marsan,"
+              " 2018 poikilos (Jake Gustafson)")
+__version__ = '0.2.1'
+__all__ = []
+
 import pygame
 import os
 import sys

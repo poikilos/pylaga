@@ -1,14 +1,15 @@
-# 2007-04-1 RJ Marsan
-# Pylaga
-# Original: 2007-02-20 Derek Mcdonald
-# Subclass of pylaga.py
-########################################################################
-#
-#    A few premade menu objects
-#
-#       Makes it easier on my brain
-#
-#
+"""menu manager for pylaga
+
+A few premade menu objects
+Makes it easier on my brain
+"""
+
+__author__ = ("2007-02-20 Derek Mcdonald (original),"
+              " 2007-04-1 RJ Marsan,"
+              " 2018 poikilos (Jake Gustafson)")
+__version__ = '0.2.1'
+__all__ = []
+
 import pygame
 import os
 import sys

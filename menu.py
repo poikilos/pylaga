@@ -1,15 +1,16 @@
-# 2007-04-1 RJ Marsan
-# Pylaga
-# Original: 2007-02-20 Derek Mcdonald
-# Subclass of pylaga.py
-########################################################################
-#
-#    The Menu.
-#
-#       Its a generic menu object, it takes 1 parameter, and thats an
-#       array of strings to display
-#
-#
+"""generic menu class
+
+Its a generic menu object, it takes 1 parameter, and thats an
+array of strings to display.
+Menus are managed by the menulists module.
+"""
+
+__author__ = ("2007-02-20 Derek Mcdonald (original),"
+              " 2007-04-1 RJ Marsan,"
+              " 2018 poikilos (Jake Gustafson)")
+__version__ = '0.2.1'
+__all__ = []
+
 import pygame
 import os
 import sys

@@ -1,13 +1,15 @@
-# 2007-04-1 RJ Marsan
-# Pylaga
-# Original: 2007-02-20 Derek Mcdonald
-# Subclass of pylaga.py
-#
-# The player class
-#
-#
-#
-#
+#!/usr/bin/env python
+"""Player for pylaga
+
+The player class
+"""
+
+__author__ = ("2007-02-20 Derek Mcdonald (original),"
+              " 2007-04-1 RJ Marsan,"
+              " 2018 poikilos (Jake Gustafson)")
+__version__ = '0.2.1'
+__all__ = []
+
 import pygame
 import os
 import sys

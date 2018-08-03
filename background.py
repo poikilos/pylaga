@@ -1,11 +1,15 @@
-# 2007-04-1 RJ Marsan
-# Pylaga
-# Original: 2007-02-20 Derek Mcdonald
-# Subclass of pylaga.py
-#
-#        The Background Manager and its subclass, star
-#        Also the global object bgstars
-#
+"""global variables for pylaga
+
+The Background Manager and its subclass, star
+Also the global object bgstars
+"""
+
+__author__ = ("2007-02-20 Derek Mcdonald (original),"
+              " 2007-04-1 RJ Marsan,"
+              " 2018 poikilos (Jake Gustafson)")
+__version__ = '0.2.1'
+__all__ = []
+
 import pygame
 import os
 import sys
@@ -16,6 +20,7 @@ import globalvars
 
 # makes a globalvars.background that moves and stuff
 class BackgroundManager(pygame.sprite.Sprite):
+
     stars = []
     last_stars = []
 
@@ -57,8 +62,8 @@ class BackgroundManager(pygame.sprite.Sprite):
         self.last_stars.append(pygame.Rect(rect))
 
 
-##########################
 class star(pygame.Rect):
+
     def set_speed(self, tspeed):
         self.speed = tspeed
 

@@ -1,11 +1,14 @@
-# 2007-04-1 RJ Marsan
-# Pylaga
-# Original: 2007-02-20 Derek Mcdonald
-# Subclass of pylaga.py
-#
-#
-#    A simple bullet class, and a subclass, EnemyBullet
-#
+"""bullets for pylaga
+
+A simple bullet class, and a subclass, EnemyBullet
+"""
+
+__author__ = ("2007-02-20 Derek Mcdonald (original),"
+              " 2007-04-1 RJ Marsan,"
+              " 2018 poikilos (Jake Gustafson)")
+__version__ = '0.2.1'
+__all__ = []
+
 import pygame
 import os
 import sys
@@ -14,7 +17,6 @@ import random
 import globalvars
 
 
-##
 # A bullet class, simple, but it does keep track of its location and
 # saves the main thread some work
 class Bullet(pygame.sprite.Sprite):

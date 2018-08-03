@@ -1,21 +1,25 @@
-# 2007-04-1 RJ Marsan
-# Pylaga
-# Original: 2007-02-20 Derek Mcdonald
-# Subclass of pylaga.py
-#
-#  Blah. the display. points, health and healthbar
-# TODO: Eliminate global vars:
-#       This whole file needs to be cleaned up to adhere to the
-#    globalvars more, I'm lazy.
-#    Scratch that. we need to get rid of globalvars altogether.
-#    DEATH TO GLOBAL VARS!
-#
+"""hud for pylaga
+
+Blah. the display. points, health and healthbar
+This whole file needs to be cleaned up to adhere to the
+globalvars more, I'm lazy.
+Scratch that. we need to get rid of globalvars altogether.
+DEATH TO GLOBAL VARS!
+"""
+
+__author__ = ("2007-02-20 Derek Mcdonald (original),"
+              " 2007-04-1 RJ Marsan,"
+              " 2018 poikilos (Jake Gustafson)")
+__version__ = '0.2.1'
+__all__ = []
+
 import pygame
 import os
 import sys
 import math
 import random
 import globalvars
+# TODO: Eliminate global vars
 
 
 ###################

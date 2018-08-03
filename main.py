@@ -1,15 +1,16 @@
 #!/usr/bin/env python
-# 2007-04-1 RJ Marsan
-# Pylaga
-# Original: 2007-02-20 Derek Mcdonald
-# Main class
-########################################################################
-#
-#
-#    This is the main class. the class that superceedes all other
-#    classes.
-#    Its short and sweet but thats the point.
-#
+"""This is the main Pylaga module
+
+This module instantiates the App class which runs the game
+utilizing other modules.
+Its short and sweet but thats the point.
+"""
+
+__author__ = ("2007-02-20 Derek Mcdonald (original),"
+              " 2007-04-1 RJ Marsan,"
+              " 2018 poikilos (Jake Gustafson)")
+__version__ = '0.2.1'
+__all__ = []  # declarees names of public API symbols (`[]` for no API)
 
 import pygame
 import os
@@ -44,6 +45,7 @@ class App:
         self.menus = MenuLists()
         self.menus.init_menu()
         self.world.start(self.menus)
+        pygame.display.set_caption("Pylaga " + __version__)
         while ((not self.menus.get_bool('exit')) and
                (self.menus.exit_menu())):
             self.world.start(self.menus)
