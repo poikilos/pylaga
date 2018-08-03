@@ -14,7 +14,6 @@ import os
 import sys
 import math
 import random
-import globalvars
 
 
 # A bullet class, simple, but it does keep track of its location and
@@ -29,7 +28,7 @@ class Bullet(pygame.sprite.Sprite):
         self.bwidth = bullet_width
         self.health = 1
 
-    def set_pos(self, tempx, tempy):
+    def move_by(self, tempx, tempy):
         self.rect.move_ip(tempx, tempy)
 
     def set_hit(self):

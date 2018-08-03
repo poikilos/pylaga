@@ -1,4 +1,4 @@
-"""global variables for pylaga
+"""Background Manager for pylaga
 
 The Background Manager, which manages stars
 """
@@ -14,10 +14,9 @@ import os
 import sys
 import math
 import random
-import globalvars
 
 
-# makes a globalvars.background that moves and stuff
+# makes a background that moves and stuff
 class BackgroundManager(pygame.sprite.Sprite):
 
     star_rects = []
@@ -25,7 +24,12 @@ class BackgroundManager(pygame.sprite.Sprite):
 
     def __init__(self, bg_rect):
         self.bg_rect = bg_rect
-        for x in range(globalvars.init_stars):
+        self.BG_Speed = 5
+        self.init_stars = 15
+        self.bg_color = (0, 0, 0)
+        self.star_color = (150, 150, 150)
+
+        for x in range(self.init_stars):
             self.add_star()
 
     def update(self):
@@ -33,32 +37,33 @@ class BackgroundManager(pygame.sprite.Sprite):
         # if st.top <= self.bg_rect.bottom]
         # ugh thanks guy online, this saved me
 
-        for counter, star in enumerate(self.star_rects):
-            if star.top > self.bg_rect.bottom:
+        for counter, star_rect in enumerate(self.star_rects):
+            if star_rect.top > self.bg_rect.bottom:
                 del self.star_rects[counter]
                 del self.prev_star_rects[counter]
                 self.add_star()
             else:
-                self.prev_star_rects[counter].topleft = star.topleft
-                star.top += star.speed
-                # print(str(star) + str(self.prev_star_rects[counter]))
+                self.prev_star_rects[counter].topleft = star_rect.topleft
+                star_rect.top += star_rect.speed
+                # print(str(star_rect) +
+                #     # str(self.prev_star_rects[counter]))
 
     def draw(self, screen):
         # TODO: eliminate this
-        for star in self.star_rects:
-            screen.fill(globalvars.star_color, star)
+        for star_rect in self.star_rects:
+            screen.fill(self.star_color, star_rect)
         return self.star_rects
 
     # def clear(self, screen):
-        # for star in self.prev_star_rects:
-            # screen.fill(globalvars.bg_color, star)
+        # for star_rect in self.prev_star_rects:
+            # screen.fill(self.bg.bg_color, star_rect)
         # return self.prev_star_rects
 
     def add_star(self):
         size = random.randint(3, 6)
-        x = random.randint(0, self.bg_rect.right)
+        x = random.randint(self.bg_rect.left, self.bg_rect.right)
         rect = Star(x, 0, size, size)
-        rect.set_speed(random.randint(2, globalvars.BG_Speed))
+        rect.set_speed(random.randint(2, self.BG_Speed))
         self.star_rects.append(rect)
         self.prev_star_rects.append(pygame.Rect(rect))
 

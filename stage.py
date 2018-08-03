@@ -16,7 +16,6 @@ import os
 import sys
 import math
 import random
-import globalvars
 
 
 class Stage:
@@ -33,8 +32,6 @@ class Stage:
     def next_stage(self):
         if len(self.enemy_stages) > self.current_stage + 1:
             self.current_stage += 1
-        if globalvars.enemy_bullet_odds > 15:
-            globalvars.enemy_bullet_odds -= 15
         self.enemymanager.current_transition = 0
 
     def set_stage(self, stage):

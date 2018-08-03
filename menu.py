@@ -16,33 +16,36 @@ import os
 import sys
 import math
 import random
-import globalvars
 
 # takes a tuple of menuitem strings as input
 # a generic menu class
 # very effective
 class Menu:
 
-    def __init__(self, menu_strings, menus):
+    def __init__(self, menu_strings, menus, font_size=20,
+                 font_name="freesansbold.ttf",
+                 fg_color=(195, 227, 247),
+                 bg_color=(0, 0, 0)):
+        self.fg_color = fg_color
+        self.bg_color = bg_color
         self.menus = menus
         self.cursor_image = self.menus.cursor_image
         self.font_rect_height = None
         self.shipselectorsize = 50, 50  # updated before use
-        self.font_size = 20  # these do fairly obvious things
+        self.font_size = font_size
         self.offset_x = 100
         self.offset_y = 200
         self.spacing = 10
         self.selection = 0
-        self.font = pygame.font.Font(globalvars.default_font,
+        self.font = pygame.font.Font(font_name,
                                      self.font_size)
         self.menuimgs = []
         self.menurects = []
         x = 0
         w, h = menus.screen.get_size()
         for entry_s in menu_strings:
-                # render all the strings that were received
-            menuimg = self.font.render(entry_s, 1,
-                                       globalvars.menu_color)
+            # render all the strings that were received
+            menuimg = self.font.render(entry_s, 1, self.fg_color)
             menurect = menuimg.get_rect()
             if len(self.menuimgs) < 1:  # if not self.menuimgs:
                 self.font_rect_height = menurect.height
@@ -103,7 +106,7 @@ class Menu:
     # generic selection changing class, not really used by outside
     # unless they know what they're doing
     def change_selection(self, selection):
-        self.selectedimg.fill(globalvars.bg_color)
+        self.selectedimg.fill(self.bg_color)
         self.update_selector_size()
         cursor_rect = pygame.Rect(0, selection*self.offset_y,
                                   self.shipselectorsize[0],

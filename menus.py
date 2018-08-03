@@ -15,7 +15,6 @@ import os
 import sys
 import math
 import random
-import globalvars
 from menu import Menu
 
 # takes a tuple of menuitem strings as input
@@ -26,7 +25,9 @@ from menu import Menu
 class Menus:
     # region the menu functions
 
-    def __init__(self, statcounter, app, logo_image, cursor_image):
+    def __init__(self, statcounter, app, logo_image, cursor_image,
+                 bg_color=(0, 0, 0)):
+        self.bg_color = bg_color
         self._vars = {}
         self.page = 'top'
         self.statcounter = statcounter
@@ -53,7 +54,7 @@ class Menus:
                     self.set_bool('exit', True)
                     break
                     # fall through to on_exit handler
-            self.app.clock.tick(globalvars.FPS)
+            self.app.clock.tick(self.app.get_fps())
         self.clear_screen()
         pygame.mouse.set_visible(0)
         pygame.event.set_grab(not self.get_bool('exit'))
@@ -84,7 +85,7 @@ class Menus:
                 if selection == 3:
                     self.set_bool('exit', True)
                     return False
-            self.app.clock.tick(globalvars.FPS)
+            self.app.clock.tick(self.app.get_fps())
         self.clear_screen()
         pygame.mouse.set_visible(0)
         return True
@@ -110,7 +111,7 @@ class Menus:
                     self.set_bool('exit', True)
                     break
                     # fall through to on_exit handler
-            self.app.clock.tick(globalvars.FPS)
+            self.app.clock.tick(self.app.get_fps())
         self.clear_screen()
         pygame.mouse.set_visible(0)
         pygame.event.set_grab(not self.get_bool('exit'))
@@ -140,5 +141,5 @@ class Menus:
     # endregion the menu functions
 
     def clear_screen(self):
-        self.screen.fill(globalvars.bg_color)
+        self.screen.fill(self.bg_color)
         pygame.display.flip()

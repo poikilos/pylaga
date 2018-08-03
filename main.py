@@ -18,13 +18,12 @@ import sys
 import math
 import random
 from pygame.locals import*
-import globalvars
 from bullet import Bullet, EnemyBullet
 from background import BackgroundManager
 from enemy import Enemy, Swarm
 from player import PlayerUnit
 from stage import Stage
-from display import *
+from hud import *
 from menu import Menu
 from world import World
 from menus import Menus
@@ -46,7 +45,6 @@ class App:
         data_sub_dir = "data"
         ced = os.path.dirname(__file__)  # current executable directory
         self.DATA_PATH = os.path.join(ced, data_sub_dir)
-
         self.screen = pygame.display.set_mode(resolution)
         pygame.display.set_caption("Pylaga " + __version__)
         self.world = World(self, self.screen)
@@ -60,6 +58,9 @@ class App:
                (self.menus.exit_menu())):
             self.world.start(self.menus)
         self.world.on_exit()
+
+    def get_fps(self):
+        return 60
 
     # general exception handler
     # (formerly used during imports to avoid exit without warning)

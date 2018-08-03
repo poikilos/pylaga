@@ -15,7 +15,6 @@ import os
 import sys
 import math
 import random
-from globalvars import explosion_speed
 from bullet import Bullet
 
 
@@ -25,6 +24,7 @@ from bullet import Bullet
 class PlayerUnit(pygame.sprite.Sprite):
 
     def __init__(self, image_list):
+        self.exp_speed = 5
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.dat = {}
         self.images = image_list
@@ -61,23 +61,21 @@ class PlayerUnit(pygame.sprite.Sprite):
             return True
         return False
 
-    def set_pos(self, x, y):
+    def move_by(self, x, y):
         self.rect.move_ip(x, y)
-        print("set_pos: player rect: " + str(self.rect))
 
     def set_hit(self):
         self.state = 1
 
     def shoot(self, image, spritegroup, locx, locy):
         self.boom = Bullet(image, spritegroup)
-        self.boom.set_pos(locx, locy)
-        # self.boom.set_speed(globalvars.BUL)
+        self.boom.move_by(locx, locy)
         spritegroup.add(self.boom)
 
     def update(self):  # yay for update...
         if self.state > 0:
-            self.image = self.images[int(self.state/explosion_speed)]
+            self.image = self.images[int(self.state/self.exp_speed)]
             self.state += 1
-            if self.state >= len(self.images) * explosion_speed:
+            if self.state >= len(self.images) * self.exp_speed:
                 self.state = 0
                 self.image = self.images[0]
