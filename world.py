@@ -50,8 +50,6 @@ class World:
         right_border = 50
         w, h = screen.get_size()
         self.world_rect = pygame.Rect(left_border, 0, w-right_border, h)
-        self.p_start_x = self.world_rect.width / 2
-        self.p_start_y = self.world_rect.height - 60
         self.bg = BackgroundManager(self.world_rect)
 
         # Yay spritegroups! They make the world go round, and iterate.
@@ -109,7 +107,8 @@ class World:
 
     # Clears all the variables
     def clear_vars(self):
-        self.p_unit.set_xy(self.p_start_x, self.p_start_y)
+        self.p_start_x = self.world_rect.width / 2
+        self.p_start_y = self.world_rect.height - 60
         self.leftkeydown = 0
         self.rightkeydown = 0
         self.hud.healthneedle.set_health(globalvars.max_health)
@@ -289,6 +288,18 @@ class World:
                 self.on_exit()
                 sys.exit(0)
 
+            # if event.type == pygame.MOUSEMOTION:
+                # pygame.event.get()
+                # prev_pos = self.p_unit.get_pos()
+                # tempx=pygame.mouse.get_pos()[0]-self.player.rect.width/2
+                # if tempx > xmax:
+                    # self.player.move(xmax, prev_x)
+                # elif tempx < xmin:
+                    # self.player.move(xmin, prev_pos[1])
+                # elif abs(tempx-self.p_start_x) > globalvars.smooth_scroll_var1:
+                    # self.player.move(self.player.get_pos().left+(tempx-self.player.get_pos().left)/globalvars.smooth_scroll_var2, prev_pos[1])
+                # else:
+                    # self.player.move(tempx, prev_pos[1])
             if event.type == pygame.MOUSEMOTION:
                 pygame.event.get()
                 prev_pos = self.p_unit.get_pos()
@@ -301,7 +312,7 @@ class World:
                     self.p_unit.set_xy(xmax, prev_pos[1])
                 elif tempx < xmin:
                     self.p_unit.set_xy(xmin, prev_pos[1])
-                elif abs(tempx-prev_pos[0]) > \
+                elif abs(tempx-self.p_start_x) > \
                         smooth_scroll_var1:
                             # smooth scrolling if the mouse gets far
                             # from the ship
@@ -352,6 +363,7 @@ class World:
         self.p_unit = PlayerUnit(self.p_unit_images)
         self.clear_vars()  # does reset player unit (p_unit) position
         self.p_spritegroup.add(self.p_unit)
+        self.p_unit.set_xy(self.p_start_x, self.p_start_y)
         self.loop()
 
     # Yeah see this one does all of the work

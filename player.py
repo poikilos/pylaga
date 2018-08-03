@@ -26,6 +26,7 @@ class PlayerUnit(pygame.sprite.Sprite):
 
     def __init__(self, image_list):
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
+        self.dat = {}
         self.images = image_list
         self.image = image_list[0]
         self.rect = self.image.get_rect()
