@@ -1,6 +1,7 @@
 # 2007-04-1 RJ Marsan
 # Pylaga
 # Original: 2007-02-20 Derek Mcdonald
+# world.py (formerly game.py)
 # Subclass of pylaga.py
 ###
 #
@@ -55,7 +56,7 @@ class World:
         self.enemy_shots = pygame.sprite.Group()
 
     def on_exit(self):
-        print("on_exit fired.")
+        print("on_exit...")
 
     # Clears all the variables
     def clear_vars(self):
@@ -334,4 +335,20 @@ class World:
 
 if __name__ == "__main__":
     print("run main.py instead.")
-    input("press enter to exit...")
+    font = pygame.font.Font(globalvars.defaultfont, 40)
+    warningimg = font.render("run main.py instead.", True, (192, 192, 192))
+    warningrect = warningimg.get_rect()
+    warningrect.move_ip(10, 5)
+    warningimg.set_alpha(10)
+    globalvars.surface.blit(warningimg, (warningrect.x, warningrect.y))
+    pygame.display.flip()
+    run = False
+    while run:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == QUIT:
+                # self.on_exit()
+                run = False
+                # sys.exit(0)
+
+    #input("press enter to exit...")
