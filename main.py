@@ -27,7 +27,7 @@ from stage import Stage
 from display import *
 from menu import Menu
 from world import World
-from menulists import Menus
+from menus import Menus
 
 if not pygame.font:
     print('Warning, fonts disabled')

@@ -2,7 +2,7 @@
 
 Its a generic menu object, it takes 1 parameter, and thats an
 array of strings to display.
-Menus are managed by the menulists module.
+Menus are managed by the menus module.
 """
 
 __author__ = ("2007-02-20 Derek Mcdonald (original),"

@@ -27,7 +27,7 @@ from player import PlayerUnit
 from stage import Stage
 from display import StatCounter, Hud
 from menu import Menu
-from menulists import Menus
+from menus import Menus
 #    import ecollision
 
 if not pygame.font:
