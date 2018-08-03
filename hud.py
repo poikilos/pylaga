@@ -25,17 +25,20 @@ class StatCounter(pygame.sprite.Sprite):
     pointstr = "Score"
 
     def __init__(self, rect, font_size=14, font_name="freesansbold.ttf",
-                 bg_color=(0, 0, 0)):
+                 bg_color=(0, 0, 0), aa=True):
+        self.aa = aa
         self.bg_color = bg_color
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.font_size = font_size
         self.font = pygame.font.Font(font_name, self.font_size)
         self.rect = rect
             # TODO: ? change
-        self.caption_img = self.font.render(self.pointstr, 0,
+        self.caption_img = self.font.render(self.pointstr,
+                                            self.aa,
                                             (255, 255, 0))
         self.caption_rect = self.caption_img.get_rect()
-        self.pointsimg = self.font.render(str(self.total_points), 0,
+        self.pointsimg = self.font.render(str(self.total_points),
+                                          self.aa,
                                           (128, 128, 128))
         self.pointsrect = self.pointsimg.get_rect()
         self.pointsrect.move_ip(0, self.caption_rect.height)
@@ -67,7 +70,7 @@ class StatCounter(pygame.sprite.Sprite):
         if self.tmpr != 0:
             self.image.fill(self.bg_color, self.pointsrect)
             self.pointsimg = self.font.render(str(self.total_points),
-                                              0, (255, 255, 255))
+                                              self.aa, (255, 255, 255))
             self.pointsrect = self.pointsimg.get_rect()
             self.pointsrect.move_ip(0, self.caption_rect.height)
             pygame.Surface.blit(self.image, self.pointsimg,
@@ -77,7 +80,7 @@ class StatCounter(pygame.sprite.Sprite):
     # def draw(self, screen):
         # text = self.font.render(self.pointstr +
         #                         str(self.total_points),
-        #                         0, (255, 255, 255))
+        #                         self.aa, (255, 255, 255))
         # screen.fill((0, 0, 0), self.rect)
         # screen.blit(text, self.rect.topleft)
 
@@ -88,7 +91,8 @@ class HealthNeedle(pygame.sprite.Sprite):
 
     def __init__(self, health, text_color, font_size=14,
                  font_name="freesansbold.ttf",
-                 bg_color=(0, 0, 0)):
+                 bg_color=(0, 0, 0), aa=True):
+        self.aa = aa
         self.bg_color = bg_color
         self.tmpr = 0  # if above 0, don't do periodic calculations
         self.healthstr = "Shield"
@@ -99,9 +103,9 @@ class HealthNeedle(pygame.sprite.Sprite):
         self.font = pygame.font.Font(font_name, self.font_size)
         self.rect = pygame.Rect(0, 50, 10, 20)
         self.caption_img = self.font.render(self.healthstr,
-                                            0, (0, 255, 0))
+                                            self.aa, (0, 255, 0))
         self.caption_rect = self.caption_img.get_rect()
-        self.healthimg = self.font.render(str(self.health), 0,
+        self.healthimg = self.font.render(str(self.health), self.aa,
                                           (128, 128, 128))
         self.healthrect = self.healthimg.get_rect()
         self.healthrect.move_ip(0, self.caption_rect.height)
@@ -147,7 +151,7 @@ class HealthNeedle(pygame.sprite.Sprite):
     def update(self):
         if self.tmpr != 0:
             self.image.fill(self.bg_color, self.healthrect)
-            self.healthimg = self.font.render(str(self.health), 0,
+            self.healthimg = self.font.render(str(self.health), self.aa,
                                               self.text_color)
             self.healthrect = self.healthimg.get_rect()
             self.healthrect.move_ip(0, self.caption_rect.height)
@@ -157,7 +161,7 @@ class HealthNeedle(pygame.sprite.Sprite):
             self.tmpr = 0
 
     # def draw(self, screen):
-        # text = self.font.render(str(self.health), 0,
+        # text = self.font.render(str(self.health), self.aa,
                                 # (255, 255, 255))
         # screen.fill((0, 0, 0), self.rect)
         # screen.blit(text, self.rect.topleft)

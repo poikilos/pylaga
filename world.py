@@ -55,7 +55,8 @@ class World:
         left_border = 50
         right_border = 50
         w, h = screen.get_size()
-        self.world_rect = pygame.Rect(left_border, 0, w-right_border, h)
+        self.world_rect = pygame.Rect(left_border, 0,
+                                      w-right_border-left_border, h)
         self.bg = BackgroundManager(self.world_rect)
 
         # Yay spritegroups! They make the world go round, and iterate.
@@ -120,9 +121,11 @@ class World:
 
     # Clears all the variables
     def clear_vars(self):
+        # print("clear_vars: world_rect: " + str(self.world_rect))
         self.p_start_x = self.world_rect.width / 2
         self.p_start_y = self.world_rect.height - 60
         self.bend_y = float(self.p_start_y)
+        # print("clear_vars: p_start_y: " + str(self.p_start_y))
         self.bend_rate = 0.02
         self.leftkeydown = 0
         self.rightkeydown = 0
@@ -257,17 +260,18 @@ class World:
     # necessary
     def tick(self):
         self.bend_y += self.bend_rate
+        bend_max = 5.0
         if self.bend_rate < 0.0:
             self.bend_rate -= .02
         else:
             self.bend_rate += .02
-        if (self.bend_y > self.p_start_x + 10.0) or (self.bend_y < self.p_start_x):
+        if (self.bend_y > self.p_start_y + bend_max) or (self.bend_y < self.p_start_y):
             if self.bend_rate < 0.0:
                 self.bend_rate = .02
-                self.bend_y = float(self.p_start_x)
+                self.bend_y = float(self.p_start_y)
             else:
                 self.bend_rate = -.02
-                self.bend_y = float(self.p_start_x + 10.0)
+                self.bend_y = float(self.p_start_y) + bend_max
         self.p_unit.set_xy(self.p_unit.get_pos()[0],
                            int(self.bend_y+.5))
         self.p_bullet_spritegroup.update()
@@ -308,7 +312,7 @@ class World:
     # does just what it sounds like.....
     def clear_screen(self):
         self.screen.fill(self.bg.bg_color)
-        pygame.display.flip()
+        # pygame.display.flip()
 
     # for debugging info mostly
     def dispvars(self):
@@ -320,14 +324,14 @@ class World:
               str(len(self.e_bullet_spritegroup.sprites())))
 
     # does lots and lots of stuff, it really needs to be cleaned up
-    def process_input(self, events):
+    def process_events(self, events):
         # print("input: self.p_unit.rect: " + str(self.p_unit.rect))
         xmin = self.world_rect.left
         xmax = self.world_rect.right
         smooth_scroll_var1 = 10
         smooth_scroll_var2 = 2
-        pygame.event.pump()  # Somewhere in the pygame docs called for
-        #                    # this line
+        pygame.event.pump()  # redraw Window so OS knows not frozen
+        pause_menu_strings = ("RESUME", "ABOUT", "HELP", "EXIT")
         for event in events:
             if event.type == QUIT:
                 self.on_exit()
@@ -365,11 +369,11 @@ class World:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
-                    self.menus.pause_menu()  # sys.exit(0)
+                    self.menus.show_dialog(pause_menu_strings)
                 if event.key == pygame.K_p:
-                    self.menus.pause_menu()
+                    self.menus.show_dialog(pause_menu_strings)
                 if event.key == pygame.K_ESCAPE:
-                    self.menus.pause_menu()  # sys.exit(0)
+                    self.menus.show_dialog(pause_menu_strings)
                 # keyboard controls
                 if event.key == pygame.K_LEFT:
                     self.leftkeydown = 1
@@ -396,9 +400,11 @@ class World:
     def start(self, menus):
         self.menus = menus
         self.p_unit = PlayerUnit(self.p_unit_images)
+        print("Clearing vars...")
         self.clear_vars()  # does reset player unit (p_unit) position
         self.p_spritegroup.add(self.p_unit)
         self.p_unit.set_xy(self.p_start_x, self.p_start_y)
+        print("Starting main event loop...")
         self.loop()
 
     # Yeah see this one does all of the work
@@ -422,7 +428,7 @@ class World:
             self.tick()
 
             # Initiate input function
-            self.process_input(pygame.event.get())
+            self.process_events(pygame.event.get())
 
             # applies the smart screen updating
             pygame.display.update()
@@ -444,11 +450,11 @@ if __name__ == "__main__":
     msg = "run main.py instead."
     print(msg)
     font = pygame.font.Font("freesansbold.ttf", 40)
-    warningimg = font.render(msg, True, (192, 192, 192))
-    warningrect = warningimg.get_rect()
-    warningrect.move_ip(10, 5)
-    warningimg.set_alpha(10)
-    screen.blit(warningimg, (warningrect.x, warningrect.y))
+    msg_img = font.render(msg, True, (192, 192, 192))
+    msg_rect = msg_img.get_rect()
+    msg_rect.move_ip(10, 5)
+    msg_img.set_alpha(10)
+    screen.blit(msg_img, (msg_rect.x, msg_rect.y))
     pygame.display.flip()
     run = False
     while run:
@@ -457,5 +463,4 @@ if __name__ == "__main__":
             if event.type == QUIT:
                 # self.on_exit()
                 run = False
-                # sys.exit(0)
     time.sleep(2)

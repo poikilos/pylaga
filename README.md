@@ -2,7 +2,7 @@
 Pylaga-py3 is a simple remake of a classic game with a similar name, with some differences in gameplay, written with the pygame libs. Pylaga-py3 is a fork of Pylaga that works on Python 3 (including Kivy 1.8.0 for Python 3).
 
 ## Authors
-Forked (Python 3 and new graphics) by: poikilos
+Forked (Python 3 and new graphics, no globalvars) by: poikilos
 Previously forked (pylaga [python 2]) by: RJ Marsan (RJMarsan@gmail.com)
 Original Creator: Derek Mcdonald
 CRYSTAL-Regular.ttf: Felipe Munoz (CC-BY SA 4.0 International)
@@ -36,6 +36,9 @@ doubleclick main.py
 * rename menulists to menus
 * change set_pos to move_by to accurately describe what it does
 * eliminate globalvars module
+* eliminate mouse_is_anywhere in favor of get_selection that returns None if mouse over nothing (otherwise returns one of the menu strings now instead of a number)
+* rename menu_action to draw_dialog
+* combine init_menu, exit_menu, pause_menu into show_dialog
 (2015-03-03)
 * (poikilos) (world.py) stopped using list of dirty rects (so-called "enemylist") that were erased before frame and were obtained by way of using draw method of sprite.RenderUpdates which is now replaced by sprite.Group which does not return dirty rects (to allow per-pixel alpha to be seen)--instead, clear whole screen then draw everything.
 (2015-03-01)

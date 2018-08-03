@@ -50,13 +50,59 @@ class App:
         self.world = World(self, self.screen)
         logo_image = self.load_file("screen-intro.png")
         cursor_image = self.load_file('pship.png')
+        about_string = '''
+            PYLAGA
+
+            License: GPL 3.0
+
+            Forked (Python 3 and new graphics, no globalvars)
+             by: poikilos
+
+            Previously forked (pylaga [python 2])
+             by: RJ Marsan (RJMarsan@gmail.com)
+
+            Original Creator:
+             Derek Mcdonald
+
+            CRYSTAL-Regular.ttf:
+             Felipe Munoz (CC-BY SA 4.0 International)
+
+            FreeSansBold.ttf:
+             Copyleft 2002, 2003, 2005, 2008, 2009, 2010
+             Free Software Foundation ([GPL License]
+             (https://www.gnu.org/licenses/gpl-3.0.en.html))
+        '''
+        help_string = '''
+            MOVE: move mouse
+            FIRE: click/tap
+            MENU: Esc
+            MENU controls: mouse or arrows and enter key
+                           (Esc or q key to resume/retry)
+            EXIT: choose Exit from menu by clicking
+                  or selecting then pressing enter
+        '''
+        pages_dict = {}
+        pages_dict['ABOUT'] = {}
+        pages_dict['ABOUT']['scroll_text'] = about_string
+        pages_dict['HELP'] = {}
+        pages_dict['HELP']['scroll_text'] = help_string
         self.menus = Menus(self.world.statcounter, self, logo_image,
-                           cursor_image)
-        self.menus.init_menu()
+                           cursor_image, pages_dict)
+        init_menu_strings = ("PLAY", "ABOUT", "HELP", "EXIT")
+        self.menus.show_dialog(init_menu_strings)
+        print("starting world...")
         self.world.start(self.menus)
+        tries = 1
+        retry_menu_strings = ("RETRY", "ABOUT", "HELP", "EXIT",
+                             "Score: %s" %
+                             world.statcounter.get_points()
+        )
         while ((not self.menus.get_bool('exit')) and
-               (self.menus.exit_menu())):
+               (self.menus.show_dialog(retry_menu_strings,
+                                       cursor_spin=-1.0))):
+            print("starting world (tries: " + str(tries) + ")...")
             self.world.start(self.menus)
+            tries += 1
         self.world.on_exit()
 
     def get_fps(self):

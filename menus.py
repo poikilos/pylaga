@@ -26,38 +26,93 @@ class Menus:
     # region the menu functions
 
     def __init__(self, statcounter, app, logo_image, cursor_image,
+                 pages_dict,
+                 # about_string='', help_string='',
                  bg_color=(0, 0, 0)):
         self.bg_color = bg_color
+        self.pages_dict = pages_dict
+        about = pages_dict.get('ABOUT')
+        about_string = None
+        if about is not None:
+            about_string = about.get('scroll_text')
+        else:
+            self.pages_dict['ABOUT'] = {}
+        if len(about_string) < 1:
+            try:
+                self.pages_dict['ABOUT']['scroll_text'] = \
+                    "author: " + __author__
+            except:
+                pass
         self._vars = {}
-        self.page = 'top'
         self.statcounter = statcounter
         self.app = app
         self.screen = app.screen
         self.logo_image = logo_image
         self.cursor_image = cursor_image
 
-    def init_menu(self):
+    def render_bordered_to(self, screen, font, text, pos,
+                           fg_color=(255, 255, 255), bg_color=(0, 0, 0),
+                           aa=True, grow_by=1):
+        bg_surf = font.render(text, aa, bg_color)
+        fg_surf = font.render(text, aa, fg_color)
+        pos = (pos[0]+grow_by, pos[1]+grow_by)
+        screen.blit(bg_surf, (pos[0]-grow_by, pos[1]-grow_by))
+        screen.blit(bg_surf, (pos[0]+grow_by, pos[1]-grow_by))
+        screen.blit(bg_surf, (pos[0]-grow_by, pos[1]+grow_by))
+        screen.blit(bg_surf, (pos[0]+grow_by, pos[1]+grow_by))
+        screen.blit(fg_surf, pos)
+        rect = fg_surf.get_rect().copy()
+        rect.inflate_ip(grow_by, grow_by)
+        rect.topleft = pos
+        return rect
+
+    def show_dialog(self, menu_strings, cursor_spin=0.0):
+        ret = True
         self.clear_screen()
-        menu = Menu(("PLAY", "ABOUT", "HELP", "EXIT"), self)
-        selection = -1
-        while True:
+        pygame.display.flip()
+        pygame.mouse.set_visible(True)  # TODO: only after first time
+        pygame.event.set_grab(False)  # TODO: only after first time
+
+        menu = Menu(menu_strings, self)
+        menu.cursor_spin = cursor_spin
+        selection = None
+        while not self.get_bool('exit'):
+            self.clear_screen()
             events = pygame.event.get()
-            selection = self.menu_action(events, menu)
-            if selection >= 0:
-                if selection == 0:
+            selection = self.draw_dialog(events, menu)
+            if selection is not None:
+                if selection == "BACK":
+                    menu.draw_menu_buttons(menu_strings, None)
                     break
-                if selection == 1:
-                    menu.disp_about()
-                if selection == 2:
-                    menu.disp_help()
-                if selection == 3:  # Chose EXIT
+                if selection == "PLAY":
+                    break
+                if selection == "RESUME":
+                    break
+                if selection == "RETRY":
+                    break
+                if selection == "ABOUT":
+                    menu.draw_menu_buttons(['BACK'], selection)
+                if selection == "HELP":
+                    menu.draw_menu_buttons(['BACK'], selection)
+                if selection == "EXIT":
                     self.set_bool('exit', True)
+                    ret = False
                     break
                     # fall through to on_exit handler
+            else:
+                menu.draw_menu_buttons(None, None, change_page=False)
+            menu.draw_cursor(self.screen)
+            # print("menu.select_i: " + str(menu.select_i))
+            # print("menu.delay_count: " + str(menu.delay_count))
+            pygame.display.update()  # dirty rect update
+            pygame.display.flip()
             self.app.clock.tick(self.app.get_fps())
         self.clear_screen()
-        pygame.mouse.set_visible(0)
+        # print("returning from menu")
+        pygame.display.flip()
+        pygame.mouse.set_visible(False)
         pygame.event.set_grab(not self.get_bool('exit'))
+        return ret
 
     def get_bool(self, name):
         return self._vars.get(name)
@@ -65,81 +120,31 @@ class Menus:
     def set_bool(self, name, v):
         self._vars[name] = v is True
 
-    def exit_menu(self):
-        self.clear_screen()
-        pygame.mouse.set_visible(1)
-        menu = Menu(("RETRY", "ABOUT", "HELP", "EXIT",
-                     "Score: %s" % self.statcounter.get_points()),
-                    self)
-        selection = -1
-        while True:
-            events = pygame.event.get()
-            selection = self.menu_action(events, menu)
-            if selection >= 0:
-                if selection == 0:
-                    break
-                if selection == 1:
-                    menu.disp_about()
-                if selection == 2:
-                    menu.disp_help()
-                if selection == 3:
-                    self.set_bool('exit', True)
-                    return False
-            self.app.clock.tick(self.app.get_fps())
-        self.clear_screen()
-        pygame.mouse.set_visible(0)
-        return True
-
-    def pause_menu(self):
-        self.clear_screen()
-        pygame.mouse.set_visible(1)
-        pygame.event.set_grab(False)
-        menu = Menu(("RESUME", "ABOUT", "HELP", "EXIT"),
-                    self)
-        selection = -1
-        while True:
-            events = pygame.event.get()
-            selection = self.menu_action(events, menu)
-            if selection >= 0:
-                if selection == 0:
-                    break
-                if selection == 1:
-                    menu.disp_about()
-                if selection == 2:
-                    menu.disp_help()
-                if selection == 3:
-                    self.set_bool('exit', True)
-                    break
-                    # fall through to on_exit handler
-            self.app.clock.tick(self.app.get_fps())
-        self.clear_screen()
-        pygame.mouse.set_visible(0)
-        pygame.event.set_grab(not self.get_bool('exit'))
-
-    def menu_action(self, events, menu):
-        selection = -1
-        pygame.event.pump()
+    def draw_dialog(self, events, menu):
+        selection = None
+        pygame.event.pump()  # redraw Window so OS knows not frozen
         for event in events:
+            if event.type == pygame.QUIT:
+                self.set_bool('exit', True)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
-                    sys.exit(0)
-                # if event.key == pygame.K_ESCAPE:
-                    # sys.exit(0)
+                    selection = "BACK"
+                if event.key == pygame.K_ESCAPE:
+                    selection = "BACK"
                 if event.key == pygame.K_UP:
-                    menu.change_selection_up()
+                    menu.change_selection_up(self.screen)
                 if event.key == pygame.K_DOWN:
-                    menu.change_selection_down()
+                    menu.change_selection_down(self.screen)
                 if event.key == pygame.K_RETURN:
                     selection = menu.get_selection()
             if event.type == pygame.MOUSEMOTION:
-                menu.change_selection_pos(event.pos)
+                menu.change_selection_pos(event.pos, self.screen)
             if event.type == pygame.MOUSEBUTTONDOWN:
-                menu.change_selection_pos(event.pos)
-                if menu.mouse_is_anywhere(event.pos):
-                    selection = menu.get_selection()
+                menu.change_selection_pos(event.pos, self.screen)
+                selection = menu.get_selection()
         return selection
     # endregion the menu functions
 
     def clear_screen(self):
         self.screen.fill(self.bg_color)
-        pygame.display.flip()
+        # pygame.display.flip()
