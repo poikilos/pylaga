@@ -21,13 +21,13 @@ import time
 from pygame.locals import*
 import globalvars
 from bullet import Bullet, EnemyBullet
-from background import BackgroundManager, bgstars
-from enemy import Enemy, EnemyManager
-from player import Player
+from background import BackgroundManager
+from enemy import Enemy, Swarm
+from player import PlayerUnit
 from stage import Stage
-from display import *
+from display import StatCounter, Hud
 from menu import Menu
-from menulists import MenuLists
+from menulists import Menus
 #    import ecollision
 
 if not pygame.font:
@@ -43,66 +43,118 @@ except:
 class World:
     # This is the __init__
     # its important.
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, app, screen):
+        self.app = app
+        self.screen = screen
+        left_border = 50
+        right_border = 50
+        w, h = screen.get_size()
+        self.world_rect = pygame.Rect(left_border, 0, w-right_border, h)
+        self.p_start_x = self.world_rect.width / 2
+        self.p_start_y = self.world_rect.height - 60
+        self.bg = BackgroundManager(self.world_rect)
+
+        # Yay spritegroups! They make the world go round, and iterate.
+        # Basically each visible game object resides in its own special
+        # spritegroup & then all one needs to do is go through these &
+        # call functions & stuff.
+        # It makes sense in here *points to brain*
+        self.p_spritegroup = pygame.sprite.Group()
+        self.hud_spritegroup = pygame.sprite.Group()
+
+        self.explosion_images = []
+        self.explosion_images.append(self.load_file('explosion1.bmp'))
+        self.explosion_images.append(self.load_file('explosion2.bmp'))
+        self.explosion_images.append(self.load_file('explosion3.bmp'))
+        self.explosion_images.append(self.load_file('explosion4.bmp'))
+        self.explosion_images.append(self.load_file('explosion5.bmp'))
+
+        # Load player sprite as image list.
+        self.p_unit_images = []
+        self.p_unit_images.append(self.load_file('pship.png'))
+        self.p_unit_images.append(self.load_file('pship1.png'))
+        self.p_unit_images.append(self.load_file('pship2.png'))
+        self.p_unit_images.append(self.load_file('pship3.png'))
+
+        # Load enemy ship image.
+        self.e_ship_image = self.load_file('eship.png')
+
         self.menus = None
         globalvars.asdf = 0
         self.lagcount = 0
         self.leftkeydown = 0
         self.rightkeydown = 0
-        # self.enemylist = []  #list of dirty rects
-        self.list_enemys = EnemyManager()
-        self.stage = Stage(self.list_enemys, globalvars.player_list)
-        self.list_allie_shots = pygame.sprite.Group()
-        self.enemy_shots = pygame.sprite.Group()
+        # self.enemylist = []  # list of dirty rects
+        self.swarm = Swarm(self.world_rect)
+        self.stage = Stage(self.swarm, self.p_spritegroup)
+
+        self.p_shot_image = self.load_file('laser.png')
+        self.e_shot_image = self.load_file('elaser.bmp')
+
+        self.p_bullet_spritegroup = pygame.sprite.Group()
+        self.e_bullet_spritegroup = pygame.sprite.Group()
+        self.bullet_width = 10
+
+        self.statcounter = StatCounter()
+        self.hud_spritegroup.add(self.statcounter)
+        self.hud = Hud()
+        self.hud_spritegroup.add(self.hud)
+        self.hud_spritegroup.add(self.hud.healthneedle)
+
+    def load_file(self, name):
+        return self.app.load_file(name)
 
     def on_exit(self):
         print("on_exit...")
 
     # Clears all the variables
     def clear_vars(self):
+        self.p_unit.set_xy(self.p_start_x, self.p_start_y)
         self.leftkeydown = 0
         self.rightkeydown = 0
-        health.set_health(globalvars.max_health)
-        points.set_points(0)
-        globalvars.x = 400
-        globalvars.y = globalvars.WIN_RESY-60
+        self.hud.healthneedle.set_health(globalvars.max_health)
+        self.statcounter.set_points(0)
         self.stage.set_stage(-1)  # hax
         globalvars.enemy_bullet_odds = 100
-        self.list_enemys.empty()
-        self.list_allie_shots.empty()
-        globalvars.player_list.empty()
-        self.enemy_shots.empty()
+        self.swarm.empty()
+        self.p_bullet_spritegroup.empty()
+        self.p_spritegroup.empty()
+        self.e_bullet_spritegroup.empty()
 
     # Define function to draw player ship on X, Y plane
-    def pship(self, x, y):
-        globalvars.player_list.draw(globalvars.surface)
+    def draw_player_units(self):
+        self.p_spritegroup.draw(self.screen)
 
     # Define function to move the enemy ship
     def emove(self):
-        self.list_enemys.draw(globalvars.surface)
+        self.swarm.draw(self.screen)  # use spritegroup draw method
 
     # Draws all the enemys you ask it
-    def draw_enemys(self):
+    def generate_enemies(self):
         # Some recursive loops:
+        xmin = self.world_rect.left
+        xmax = self.world_rect.right
+        ymin = self.world_rect.top
         for enemycol in range(self.stage.get_stage()[0]):
             # Now for the rows
             for enemyrow in range(self.stage.get_stage()[1]):
                 # Make a new enemy object:
-                tempenemy = Enemy(self.list_enemys)
-                tempenemy.set_pos(
-                    globalvars.xmin +
+                new_enemy = Enemy(self.swarm,
+                                  self.e_ship_image,
+                                  self.explosion_images)
+                new_enemy.set_pos(
+                    xmin +
                     enemycol * (globalvars.enemy_width +
                                 globalvars.enemy_spacing_x),
-                    globalvars.ymin +
+                    ymin +
                     enemyrow * (globalvars.enemy_height +
                                 globalvars.enemy_spacing_y) - 150
                 )
-                tempenemy.set_range(
-                    globalvars.xmin +
+                new_enemy.set_range(
+                    xmin +
                     enemycol * (globalvars.enemy_width +
                                 globalvars.enemy_spacing_x),
-                    globalvars.xmax -
+                    xmax -
                     (self.stage.get_stage()[0] - enemycol) *
                     (globalvars.enemy_height +
                      globalvars.enemy_spacing_x)
@@ -110,79 +162,83 @@ class World:
 
                 # Now add the temp enemy to the array and we're good to
                 # go
-                self.list_enemys.add(tempenemy)
+                self.swarm.add(new_enemy)
 
     # So I'm trying out having the program check for collisions, instead
     # of the enemy objects i think i might switch to the objects, but
     # still keep this function just hand the computing to the object
     def test_collision(self):
-        todie = pygame.sprite.groupcollide(self.list_enemys,
-                                           self.list_allie_shots, 0, 0)
+        todie = pygame.sprite.groupcollide(self.swarm,
+                                           self.p_bullet_spritegroup,
+                                           0, 0)
         for enemy, bullet in todie.items():
-            self.list_allie_shots.remove(bullet)
+            self.p_bullet_spritegroup.remove(bullet)
             enemy.set_state(0)
-            points.add_points(1)
-        if pygame.sprite.spritecollideany(self.player,
-                                          self.enemy_shots):
-            self.player.set_hit()
-            health.hit()
+            self.statcounter.add_points(1)
+        if pygame.sprite.spritecollideany(self.p_unit,
+                                          self.e_bullet_spritegroup):
+            self.p_unit.set_hit()
+            self.hud.healthneedle.hit()
 
     # if there are no enemys left, go to the next stage
     def check_done(self):
-        if not self.list_enemys:
+        if not self.swarm:
             self.stage.next_stage()
-            self.draw_enemys()
+            self.generate_enemies()
 
     # checks to see if we can expand the ranges of the bots so its nice
     # and.... umm... nice.
     def check_rows(self):
         if globalvars.asdf % 20 == 0:
             # simple sorting algorithm to find the highest values
-            highest = globalvars.xmin
-            lowest = globalvars.xmax
-            for enemy in self.list_enemys:
+            xmin = self.world_rect.left
+            xmax = self.world_rect.right
+            highest = xmin
+            lowest = xmax
+            for enemy in self.swarm:
                 if enemy.get_range()[1] > highest:
                     highest = enemy.get_range()[1]
                 if enemy.get_range()[0] < lowest:
                     lowest = enemy.get_range()[0]
-            highest = globalvars.xmax-highest
-            lowest = lowest-globalvars.xmin
+            highest = xmax - highest
+            lowest = lowest - xmin
             if highest != 0 or lowest != 0:
                     # makes things |--| this much more efficient
-                for enemy in self.list_enemys:
+                for enemy in self.swarm:
                     erange = enemy.get_range()
                     enemy.set_range(erange[0]-lowest,
                                     erange[1]+highest)
 
     # major hack just to get this thing playable..... sorry
     def again(self):
-        if health.get_health() <= 0:
+        if self.hud.healthneedle.get_health() <= 0:
             return False
         return True
 
     # this is called if the player shoots
-    def pshoot(self, sx, sy):
-        self.player.shoot(self.list_allie_shots, sx, sy)
+    def pshoot(self):
+        sx = self.p_unit.rect.centerx - self.bullet_width / 2
+        sy = self.p_unit.rect.top
+        self.p_unit.shoot(self.p_shot_image, self.p_bullet_spritegroup,
+                          sx, sy)
 
     # draws the bullet.... duh. come on dude.
-    def drawbullets(self):
-        # for x in self.list_allie_shots:
-            # x.draw()
-        self.list_allie_shots.draw(globalvars.surface)
-        self.enemy_shots.draw(globalvars.surface)
+    def draw_bullets(self):
+        self.p_bullet_spritegroup.draw(self.screen)
+        self.e_bullet_spritegroup.draw(self.screen)
 
     # ...
-    def drawsidepanel(self):
+    def draw_hud(self):
         if globalvars.asdf % 5 == 0:
-            globalvars.side_panel.update()
-        globalvars.side_panel.draw(globalvars.surface)
+            self.hud_spritegroup.update()
+        self.hud_spritegroup.draw(self.screen)
 
     # Goes through all the objects and makes each of them move as
     # necessary
     def tick(self):
-        self.list_allie_shots.update()
-        self.list_enemys.update()
-        self.enemy_shots.update()
+        self.p_bullet_spritegroup.update()
+        self.swarm.update()
+        self.e_bullet_spritegroup.update()
 
     ######################
     # Here are a bunch of metafunctions.
@@ -193,36 +249,39 @@ class World:
         self.check_done()
         self.test_collision()
         self.check_rows()
-        bgstars.update()
-        self.list_enemys.shoot(self.enemy_shots)
-        self.player.update()
+        self.bg.update()
+        self.swarm.shoot(self.e_shot_image, self.e_bullet_spritegroup)
+        self.p_unit.update()
 
     def draw(self):
-        globalvars.surface.fill(globalvars.bgcolor)
-        bgstars.draw()
-        self.drawbullets()
-        self.pship(globalvars.x, globalvars.y)
+        self.screen.fill(globalvars.bg_color)
+        self.bg.draw(self.screen)
+        self.draw_bullets()
+        self.draw_player_units()
         self.emove()
-        self.drawsidepanel()
+        self.draw_hud()
 
     # does just what it sounds like.....
     def clear_screen(self):
-        globalvars.surface.fill(globalvars.bgcolor)
+        self.screen.fill(globalvars.bg_color)
         pygame.display.flip()
 
     # for debugging info mostly
     def dispvars(self):
-        print("The Enemy Array size is:" +
-              str(len(self.list_enemys.sprites())))
-        print("The Player Shot Array size is:" +
-              str(len(self.list_allie_shots.sprites())))
-        print("The Enemy Shot Array size is:" +
-              str(len(self.enemy_shots.sprites())))
+        print("The Enemy SpriteGroup size is:" +
+              str(len(self.swarm.sprites())))
+        print("The Player Bullet Array size is:" +
+              str(len(self.p_bullet_spritegroup.sprites())))
+        print("The Enemy Bullet Array size is:" +
+              str(len(self.e_bullet_spritegroup.sprites())))
 
     # does lots and lots of stuff, it really needs to be cleaned up
     def input(self, events):
-        global x
-        global y
+        # print("input: self.p_unit.rect: " + str(self.p_unit.rect))
+        xmin = self.world_rect.left
+        xmax = self.world_rect.right
+        smooth_scroll_var1 = 10
+        smooth_scroll_var2 = 2
         pygame.event.pump()  # Somewhere in the pygame docs called for
         #                    # this line
         for event in events:
@@ -232,31 +291,31 @@ class World:
 
             if event.type == pygame.MOUSEMOTION:
                 pygame.event.get()
+                prev_pos = self.p_unit.get_pos()
                 tempx = (pygame.mouse.get_pos()[0] -
-                         self.player.rect.width / 2)
+                         self.p_unit.rect.width / 2)
                 # *Just to make sure we don't get the ship way out:
-                if tempx > globalvars.xmax:
+                if tempx > xmax:
                         # if its outside the globalvars.window,
                         # just stick it as far as possible
-                    self.player.move(globalvars.xmax, globalvars.y)
-                elif tempx < globalvars.xmin:
-                    self.player.move(globalvars.xmin, globalvars.y)
-                elif abs(tempx-globalvars.x) > \
-                        globalvars.smooth_scroll_var1:
+                    self.p_unit.set_xy(xmax, prev_pos[1])
+                elif tempx < xmin:
+                    self.p_unit.set_xy(xmin, prev_pos[1])
+                elif abs(tempx-prev_pos[0]) > \
+                        smooth_scroll_var1:
                             # smooth scrolling if the mouse gets far
                             # from the ship
-                    self.player.move(self.player.get_pos().left +
-                                     (tempx-self.player.get_pos().left) /
-                                     globalvars.smooth_scroll_var2,
-                                     globalvars.y)
+                    self.p_unit.set_xy(
+                        prev_pos[0] +
+                        (tempx-prev_pos[0]) /
+                        smooth_scroll_var2,
+                        prev_pos[1])
                 else:        # if it gets down to this point,
                         # we've passed all sanity checks so just move it
-                    self.player.move(tempx, globalvars.y)
+                    self.p_unit.set_xy(tempx, prev_pos[1])
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                self.pshoot(self.player.rect.centerx -
-                            globalvars.BULLET_WIDTH / 2,
-                            globalvars.y)
+                self.pshoot()
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
@@ -271,9 +330,7 @@ class World:
                 if event.key == pygame.K_RIGHT:
                     self.rightkeydown = 1
                 if event.key == pygame.K_SPACE:
-                    self.pshoot(self.player.rect.centerx -
-                                globalvars.BULLET_WIDTH / 2,
-                                globalvars.y)
+                    self.pshoot()
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
@@ -282,9 +339,9 @@ class World:
                     self.rightkeydown = 0
 
         if self.leftkeydown:
-            self.player.move_one(0)
+            self.p_unit.move_one(-1, self.world_rect)
         if self.rightkeydown:
-            self.player.move_one(1)
+            self.p_unit.move_one(1, self.world_rect)
 
         pygame.event.clear()
 
@@ -292,17 +349,16 @@ class World:
 
     def start(self, menus):
         self.menus = menus
-        self.clear_vars()
-        self.player = Player()
-        globalvars.player_list.add(self.player)
-        self.player.set_pos(globalvars.x, globalvars.y)
+        self.p_unit = PlayerUnit(self.p_unit_images)
+        self.clear_vars()  # does reset player unit (p_unit) position
+        self.p_spritegroup.add(self.p_unit)
         self.loop()
 
     # Yeah see this one does all of the work
     def loop(self):
         # Start loop
         while (not self.menus.get_bool('exit')) and (self.again()):
-            # Refresh globalvars.screen periodically
+            # Refresh screen periodically
             if globalvars.asdf >= globalvars.REFRESH_TIME:
                 # self.clear_screen()
                 globalvars.asdf = 0
@@ -326,24 +382,24 @@ class World:
             # self.enemylist = []
 
             # Pauses and waits
-            timeittook = globalvars.clock.tick(globalvars.FPS)
+            timeittook = self.app.clock.tick(globalvars.FPS)
             # if timeittook > 1000/globalvars.FPS:
             #   # print("LAG:" + str(self.lagcount) + " at " +
             #         # str(timeittook) + "ms")
             #   # self.dispvars()
             #   # self.lagcount += 1
-            # print globalvars.clock.get_fps()
+            # print self.app.clock.get_fps()
 
 if __name__ == "__main__":
     msg = "run main.py instead."
     print(msg)
-    font = pygame.font.Font(globalvars.defaultfont, 40)
+    font = pygame.font.Font(globalvars.default_font, 40)
     warningimg = font.render(msg, True, (192, 192, 192))
     warningrect = warningimg.get_rect()
     warningrect.move_ip(10, 5)
     warningimg.set_alpha(10)
-    globalvars.surface.blit(warningimg, (warningrect.x, warningrect.y))
-    pygame.display.flip()
+    #screen.blit(warningimg, (warningrect.x, warningrect.y))
+    #pygame.display.flip()
     run = False
     while run:
         events = pygame.event.get()

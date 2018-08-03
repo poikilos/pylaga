@@ -17,46 +17,47 @@ import sys
 import math
 import random
 import globalvars
-from globalvars import WIN_RESX
-from globalvars import WIN_RESY
-
 
 # takes a tuple of menuitem strings as input
 # a generic menu class
 # very effective
 class Menu:
-    font_rect_height = None
-    shipselectorsize = 50, 50  # updated before use
 
-    def __init__(self, menuitems):
+    def __init__(self, menu_strings, menus):
+        self.menus = menus
+        self.cursor_image = self.menus.cursor_image
+        self.font_rect_height = None
+        self.shipselectorsize = 50, 50  # updated before use
         self.font_size = 20  # these do fairly obvious things
         self.offset_x = 100
         self.offset_y = 200
         self.spacing = 10
         self.selection = 0
-        self.font = pygame.font.Font(globalvars.defaultfont,
+        self.font = pygame.font.Font(globalvars.default_font,
                                      self.font_size)
         self.menuimgs = []
         self.menurects = []
         x = 0
-        for menuitem in menuitems:
+        w, h = menus.screen.get_size()
+        for entry_s in menu_strings:
                 # render all the strings that were received
-            menuimg = self.font.render(menuitem, 1,
-                                       globalvars.menucolor)
+            menuimg = self.font.render(entry_s, 1,
+                                       globalvars.menu_color)
             menurect = menuimg.get_rect()
             if len(self.menuimgs) < 1:  # if not self.menuimgs:
                 self.font_rect_height = menurect.height
                 self.update_selector_size()
-                self.spacing = int(WIN_RESY / 60)
-                self.offset_x = (WIN_RESX - menurect.width) / 2
-                self.offset_y = int(WIN_RESY / 2 +
+                self.spacing = int(h / 60)
+                self.offset_x = (w - menurect.width) / 2
+                self.offset_y = int(h / 2 +
                                     self.shipselectorsize[1] +
                                     self.spacing)
                 menurect.move_ip(self.offset_x, self.offset_y)
             else:
                 menurect.move_ip(
                     self.offset_x,
-                    self.menurects[x-1].bottom+self.spacing)
+                    self.menurects[x-1].bottom+self.spacing
+                )
             self.menuimgs.append(menuimg)
             self.menurects.append(menurect)
             x += 1
@@ -72,25 +73,25 @@ class Menu:
             self.menurect.height
         )
         self.selectedimg = pygame.Surface(self.selectedrect.size)
-        self.shipimg = pygame.transform.rotate(
-            globalvars.playership[0], 0
-        )  # -90)
-        self.shipimg = pygame.transform.scale(globalvars.playership[0],
-                                              (self.shipselectorsize[0],
-                                              self.shipselectorsize[1]))
-        self.move = self.menurects[0].height + self.spacing
-        cursor_rect = pygame.Rect(0, self.selection*self.move,
+        self.shipimg = pygame.transform.rotate(self.cursor_image,
+                                               0)  # -90)
+        self.shipimg = pygame.transform.scale(
+            self.cursor_image,
+            (self.shipselectorsize[0], self.shipselectorsize[1])
+        )
+        self.offset_y = self.menurects[0].height + self.spacing
+        cursor_rect = pygame.Rect(0, self.selection*self.offset_y,
                                   self.shipselectorsize[0],
                                   self.shipselectorsize[1])
         self.selectedimg.blit(self.shipimg, cursor_rect)
         x = 0
-        globalvars.surface.blit(globalvars.logo,
-                                globalvars.logo.get_rect())
+        self.menus.screen.blit(self.menus.logo_image,
+                               self.menus.logo_image.get_rect())
         for menuimg in self.menuimgs:
                 # draw all the images to the display
-            globalvars.surface.blit(menuimg, self.menurects[x])
+            self.menus.screen.blit(menuimg, self.menurects[x])
             x += 1
-        globalvars.surface.blit(self.selectedimg, self.selectedrect)
+        self.menus.screen.blit(self.selectedimg, self.selectedrect)
         pygame.display.flip()
 
     def update_selector_size(self):
@@ -102,13 +103,13 @@ class Menu:
     # generic selection changing class, not really used by outside
     # unless they know what they're doing
     def change_selection(self, selection):
-        self.selectedimg.fill(globalvars.bgcolor)
+        self.selectedimg.fill(globalvars.bg_color)
         self.update_selector_size()
-        cursor_rect = pygame.Rect(0, selection*self.move,
+        cursor_rect = pygame.Rect(0, selection*self.offset_y,
                                   self.shipselectorsize[0],
                                   self.shipselectorsize[1])
         self.selectedimg.blit(self.shipimg, cursor_rect)
-        globalvars.surface.blit(self.selectedimg, self.selectedrect)
+        self.menus.screen.blit(self.selectedimg, self.selectedrect)
         pygame.display.update(self.selectedrect)
 
     # simple methods to move selction up or down
@@ -126,8 +127,8 @@ class Menu:
     def change_selection_pos(self, pos):
         changed = False
         x = 0
-        for menuitem in self.menurects:
-            if menuitem.collidepoint(pos):
+        for menu_rect in self.menurects:
+            if menu_rect.collidepoint(pos):
                 if self.selection != x:
                     self.selection = x
                     changed = True
@@ -137,8 +138,8 @@ class Menu:
 
     # useful so that a random mouseclick doesnt do anything
     def mouse_is_anywhere(self, pos):
-        for menuitem in self.menurects:
-            if menuitem.collidepoint(pos):
+        for menu_rect in self.menurects:
+            if menu_rect.collidepoint(pos):
                 return True
         return False
 
@@ -149,7 +150,9 @@ class Menu:
 # TODO: other screens
 
     def disp_about(self):
+        menus.page = 'about'
         return
 
     def disp_help(self):
+        menus.page = 'help'
         return

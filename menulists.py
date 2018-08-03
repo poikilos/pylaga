@@ -17,21 +17,27 @@ import math
 import random
 import globalvars
 from menu import Menu
-from display import points
-
 
 # takes a tuple of menuitem strings as input
 # a generic menu class
 # very effective
-class MenuLists:
+# The app param must at least contain the following pygame objects:
+# app.clock app.screen
+class Menus:
     # region the menu functions
 
-    def __init__(self):
+    def __init__(self, statcounter, app, logo_image, cursor_image):
         self._vars = {}
+        self.page = 'top'
+        self.statcounter = statcounter
+        self.app = app
+        self.screen = app.screen
+        self.logo_image = logo_image
+        self.cursor_image = cursor_image
 
     def init_menu(self):
         self.clear_screen()
-        menu = Menu(("PLAY", "ABOUT", "HELP", "EXIT"))
+        menu = Menu(("PLAY", "ABOUT", "HELP", "EXIT"), self)
         selection = -1
         while True:
             events = pygame.event.get()
@@ -47,7 +53,7 @@ class MenuLists:
                     self.set_bool('exit', True)
                     break
                     # fall through to on_exit handler
-            globalvars.clock.tick(globalvars.FPS)
+            self.app.clock.tick(globalvars.FPS)
         self.clear_screen()
         pygame.mouse.set_visible(0)
         pygame.event.set_grab(not self.get_bool('exit'))
@@ -62,7 +68,8 @@ class MenuLists:
         self.clear_screen()
         pygame.mouse.set_visible(1)
         menu = Menu(("RETRY", "ABOUT", "HELP", "EXIT",
-                     "Score: %s" % points.get_points()))
+                     "Score: %s" % self.statcounter.get_points()),
+                    self)
         selection = -1
         while True:
             events = pygame.event.get()
@@ -77,7 +84,7 @@ class MenuLists:
                 if selection == 3:
                     self.set_bool('exit', True)
                     return False
-            globalvars.clock.tick(globalvars.FPS)
+            self.app.clock.tick(globalvars.FPS)
         self.clear_screen()
         pygame.mouse.set_visible(0)
         return True
@@ -86,7 +93,8 @@ class MenuLists:
         self.clear_screen()
         pygame.mouse.set_visible(1)
         pygame.event.set_grab(False)
-        menu = Menu(("RESUME", "ABOUT", "HELP", "EXIT"))
+        menu = Menu(("RESUME", "ABOUT", "HELP", "EXIT"),
+                    self)
         selection = -1
         while True:
             events = pygame.event.get()
@@ -102,7 +110,7 @@ class MenuLists:
                     self.set_bool('exit', True)
                     break
                     # fall through to on_exit handler
-            globalvars.clock.tick(globalvars.FPS)
+            self.app.clock.tick(globalvars.FPS)
         self.clear_screen()
         pygame.mouse.set_visible(0)
         pygame.event.set_grab(not self.get_bool('exit'))
@@ -132,5 +140,5 @@ class MenuLists:
     # endregion the menu functions
 
     def clear_screen(self):
-        globalvars.surface.fill(globalvars.bgcolor)
+        self.screen.fill(globalvars.bg_color)
         pygame.display.flip()

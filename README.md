@@ -8,7 +8,7 @@ Original Creator: Derek Mcdonald
 CRYSTAL-Regular.ttf: Felipe Munoz (CC-BY SA 4.0 International)
 FreeSansBold.ttf: Copyleft 2002, 2003, 2005, 2008, 2009, 2010 Free Software Foundation ([GPL License](https://www.gnu.org/licenses/gpl-3.0.en.html))
 
-## How to install: 
+## How to install:
 
 ### Ubuntu/Debian:
 sudo apt-get install python3 python3-pygame
@@ -24,6 +24,15 @@ Install pygame for python 3
 doubleclick main.py
 
 ## Changes (Pylaga-py3):
+(2018-08-03)
+* conform to PEP8
+* rename almost all variables and classes with consistent naming convention
+* fix unused but broken add_health method (used undefined local points instead of health param--so changed both to amount)
+* eliminated globalvars.x, globalvars.y (analogous to p_unit.get_pos() aka p_unit.rect.topleft)
+* renamed eliminated old screen variable and renamed surface to screen as per pygame usual convention
+* eliminate globalvars WIN_RESX and WIN_RESY in favor of pygame display variables such as `w, h = pygame.display.get_surface().get_size()`
+* eliminate globalvars ymin, ymax, xmin, xmax in favor of world_rect
+* flip rects for in_range method so makes sense and doesn't require globals
 *(2015-03-03)-game.py: stopped using list of dirty rects (so-called "enemylist") that were erased before frame and were obtained by way of using draw method of sprite.RenderUpdates which is now replaced by sprite.Group which does not return dirty rects (to allow per-pixel alpha to be seen)--instead, clear whole screen then draw everything.
 *(2015-03-01)-improved player ship graphics with alpha
 *(2015-03-03)-globalvars.py: change convert to convert_alpha so loaded images retain alpha channel

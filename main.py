@@ -20,14 +20,14 @@ import random
 from pygame.locals import*
 import globalvars
 from bullet import Bullet, EnemyBullet
-from background import BackgroundManager, bgstars
-from enemy import Enemy, EnemyManager
-from player import Player
+from background import BackgroundManager
+from enemy import Enemy, Swarm
+from player import PlayerUnit
 from stage import Stage
 from display import *
 from menu import Menu
 from world import World
-from menulists import MenuLists
+from menulists import Menus
 
 if not pygame.font:
     print('Warning, fonts disabled')
@@ -40,12 +40,22 @@ if not pygame.font:
 #
 #
 class App:
-    def __init__(self):
-        self.world = World(self)
-        self.menus = MenuLists()
+    def __init__(self, resolution):
+        pygame.init()
+        self.clock = pygame.time.Clock()
+        data_sub_dir = "data"
+        ced = os.path.dirname(__file__)  # current executable directory
+        self.DATA_PATH = os.path.join(ced, data_sub_dir)
+
+        self.screen = pygame.display.set_mode(resolution)
+        pygame.display.set_caption("Pylaga " + __version__)
+        self.world = World(self, self.screen)
+        logo_image = self.load_file("screen-intro.png")
+        cursor_image = self.load_file('pship.png')
+        self.menus = Menus(self.world.statcounter, self, logo_image,
+                           cursor_image)
         self.menus.init_menu()
         self.world.start(self.menus)
-        pygame.display.set_caption("Pylaga " + __version__)
         while ((not self.menus.get_bool('exit')) and
                (self.menus.exit_menu())):
             self.world.start(self.menus)
@@ -69,7 +79,15 @@ class App:
             print(message)
         raise
 
+    def load_file(self, filename):
+        try:
+            path = os.path.join(self.DATA_PATH, filename)
+            return pygame.image.load(path).convert_alpha()
+        except:
+            print("Failed to load file "+filename)
+        return None
+
 
 # the one line that starts the game
 # if __name__ == "__main__":
-app = App()
+app = App((800,600))

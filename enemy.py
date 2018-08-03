@@ -1,6 +1,6 @@
 """enemy system for pylaga
 
-The All Important Enemy class, and its manager EnemyManager
+The All Important Enemy class, and its manager Swarm
 """
 
 __author__ = ("2007-02-20 Derek Mcdonald (original),"
@@ -18,18 +18,19 @@ import globalvars
 from bullet import EnemyBullet
 
 
-class EnemyManager(pygame.sprite.Group):
-    def __init__(self):
+class Swarm(pygame.sprite.Group):
+    def __init__(self, world_rect):
+        self.world_rect = world_rect
         pygame.sprite.Group.__init__(self)
         self.asdf = 0
         self.transition_speed = 5
         self.transition_time = 150 / self.transition_speed
         self.current_transition = 0
 
-    def shoot(self, shotslist):
+    def shoot(self, image, bullet_spritegroup):
         self.asdf = random.randint(0, globalvars.enemy_bullet_odds)
         if self.asdf < len(self):
-            self.sprites()[self.asdf].shoot(shotslist)
+            self.sprites()[self.asdf].shoot(image, bullet_spritegroup)
 
     def update(self):
         if self.current_transition < self.transition_time:
@@ -47,26 +48,27 @@ class Enemy(pygame.sprite.Sprite):
     eny = 30
     # enspeed=globalvars.init_enemy_speed
     # envel=1
-    # en_globalvars.xmax=globalvars.xmax
+    # self.world_rect.right
     #   # # come in very handy when there
     # is more than 1 enemy
-    # en_globalvars.xmin=globalvars.xmin
+    # swarm.world_rect.left
     #   # # yeah what the first one said.^^
     # en_state=(-1)*(1)
-    # image = globalvars.enemyship
 
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, swarm, enemy_image, explosion_images):
+        self.swarm = swarm
+        self.world_rect = swarm.world_rect
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.enspeed = globalvars.init_enemy_speed
         self.envel = 1
-        self.en_xmax = globalvars.xmax
-        self.en_xmin = globalvars.xmin
+        self.world_rect.right = swarm.world_rect.right
+        self.world_rect.left = swarm.world_rect.left
         self.en_state = (-1) * (1)  # TODO: why not -1??
-        self.image = globalvars.enemyship
+        self.image = enemy_image
         self.rect = self.image.get_rect()
+        self.explosion_images = explosion_images
 
-    # def get_pos(self):
+    # def get_dest_rect(self):
         # return self.enx,self.eny
 
     def set_pos(self, tempx, tempy):
@@ -76,11 +78,11 @@ class Enemy(pygame.sprite.Sprite):
         self.enspeed = speed
 
     def set_range(self, tempmin, tempmax):
-        self.en_xmax = tempmax
-        self.en_xmin = tempmin
+        self.world_rect.right = tempmax
+        self.world_rect.left = tempmin
 
     def get_range(self):
-        return self.en_xmin, self.en_xmax
+        return self.world_rect.left, self.world_rect.right
 
     def update(self, transition_speed):  # yay for update...
         # this is actually surgy's code but i adapted it to my own and
@@ -88,14 +90,14 @@ class Enemy(pygame.sprite.Sprite):
         if transition_speed > 0:
             self.rect.bottom += transition_speed
         elif self.envel <= 0:
-            if self.rect.left < self.en_xmax:
+            if self.rect.left < self.world_rect.right:
                 self.rect.right += self.enspeed
-            elif self.rect.left >= self.en_xmax:
+            elif self.rect.left >= self.world_rect.right:
                 self.envel = 1
         else:
-            if self.rect.left > self.en_xmin:
+            if self.rect.left > self.world_rect.left:
                 self.rect.right += ((-1) * self.enspeed)
-            elif self.rect.left <= self.en_xmin:
+            elif self.rect.left <= self.world_rect.left:
                 self.envel = 0
         self.next_state()
 
@@ -105,17 +107,17 @@ class Enemy(pygame.sprite.Sprite):
 
     def next_state(self):
         if self.en_state >= 0 and self.en_state < 5:
-            self.image = globalvars.explosions[self.en_state]
+            self.image = self.explosion_images[self.en_state]
             self.en_state += 1
         elif self.en_state > 4:
-            self.parent.remove(self)
+            self.swarm.remove(self)
 
     # return the state
     def get_state(self):
         return self.en_state
 
-    def shoot(self, shotslist):
-        tempb = EnemyBullet(shotslist)
+    def shoot(self, image, spritegroup):
+        tempb = EnemyBullet(image, spritegroup, self.world_rect)
         tempb.set_pos(self.rect.left + self.rect.width / 2,
                       self.rect.bottom)
-        shotslist.add(tempb)
+        spritegroup.add(tempb)

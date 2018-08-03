@@ -1,6 +1,6 @@
 """hud for pylaga
 
-Blah. the display. points, health and healthbar
+Blah. the display. points, health and hud
 This whole file needs to be cleaned up to adhere to the
 globalvars more, I'm lazy.
 Scratch that. we need to get rid of globalvars altogether.
@@ -26,14 +26,14 @@ import globalvars
 # TODO: i needed to make this an object because i couldnt figure out how
 # to make it globally available but also writable
 # meh
-class Points(pygame.sprite.Sprite):
+class StatCounter(pygame.sprite.Sprite):
     total_points = 0
     temp = 0  # if its changed, temp changes to 1 (slightly speeds up)
     pointstr = "Score"
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
-        self.font = pygame.font.Font(globalvars.defaultfont,
+        self.font = pygame.font.Font(globalvars.default_font,
                                      globalvars.points_text_size)
         self.rect = pygame.Rect(globalvars.points_x,
                                 globalvars.points_y, 10, 10)  # TODO: ? change
@@ -51,24 +51,24 @@ class Points(pygame.sprite.Sprite):
         pygame.Surface.blit(self.image, self.pointsimg, self.pointsrect)
         temp = 1
 
-    def add_points(self, points):
-        self.total_points += points
+    def add_points(self, amount):
+        self.total_points += amount
         self.temp = 1
 
-    def set_points(self, points):
-        self.total_points = points
+    def set_points(self, amount):
+        self.total_points = amount
         self.temp = 1
 
     def get_points(self):
         return self.total_points
 
-    def sub_points(self, points):
-        self.total_points -= points
+    def sub_points(self, amount):
+        self.total_points -= amount
         self.temp = 1
 
     def update(self):
         if self.temp != 0:
-            self.image.fill(globalvars.bgcolor, self.pointsrect)
+            self.image.fill(globalvars.bg_color, self.pointsrect)
             self.pointsimg = self.font.render(str(self.total_points),
                                               0, (255, 255, 255))
             self.pointsrect = self.pointsimg.get_rect()
@@ -77,25 +77,23 @@ class Points(pygame.sprite.Sprite):
                                 self.pointsrect)
             self.temp = 0
 
-    def draw(self):
-        text = self.font.render(self.pointstr + str(self.total_points),
-                                0, (255, 255, 255))
-        globalvars.surface.fill((0, 0, 0), self.rect)
-        globalvars.surface.blit(text,
-                                (globalvars.points_x,
-                                 globalvars.points_y))
+    # def draw(self, screen):
+        # text = self.font.render(self.pointstr + str(self.total_points),
+                                # 0, (255, 255, 255))
+        # screen.fill((0, 0, 0), self.rect)
+        # screen.blit(text, (globalvars.points_x, globalvars.points_y))
 
 
 ###################
 # 2 pieces of text on 1 image
-class Health(pygame.sprite.Sprite):
+class HealthNeedle(pygame.sprite.Sprite):
     total_health = 100
     temp = 0  # if its changed, temp changes to 1 (slightly speeds up)
     healthstr = "Shield"
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
-        self.font = pygame.font.Font(globalvars.defaultfont,
+        self.font = pygame.font.Font(globalvars.default_font,
                                      globalvars.points_text_size)
         self.rect = pygame.Rect(globalvars.health_x,
                                 globalvars.health_y,
@@ -114,12 +112,15 @@ class Health(pygame.sprite.Sprite):
         pygame.Surface.blit(self.image, self.healthimg, self.healthrect)
         temp = 1
 
-    def add_health(self, health):
-        self.total_health += points
+    def add_health(self, amount):
+        if amount < 0:
+            print("WARNING in add_health: added negative number"
+                  "so subtracting!")
+        self.total_health += amount
         self.temp = 1
 
-    def set_health(self, health):
-        self.total_health = health
+    def set_health(self, total_health):
+        self.total_health = total_health
         self.temp = 1
 
     def get_health(self):
@@ -131,17 +132,19 @@ class Health(pygame.sprite.Sprite):
     def get_size(self):
         return pygame.Rect.union(self.healthrect, self.textrect)
 
-    def sub_health(self, health):
-        self.total_health = self.total_health - (health)
-        # print("hit " + str(self.total_health))
+    def sub_health(self, amount):
+        if amount < 0:
+            print("WARNING in sub_health: subtracted negative number"
+                  "so adding!")
+        self.total_health = self.total_health - amount
         self.temp = 1
 
-    def hit(self):
-        self.sub_health(1)
+    def hit(self, amount=1):
+        self.sub_health(amount)
 
     def update(self):
         if self.temp != 0:
-            self.image.fill(globalvars.bgcolor, self.healthrect)
+            self.image.fill(globalvars.bg_color, self.healthrect)
             self.healthimg = self.font.render(str(self.total_health), 0,
                                               (255, 255, 255))
             self.healthrect = self.healthimg.get_rect()
@@ -151,55 +154,44 @@ class Health(pygame.sprite.Sprite):
             # print("Health Decreased to " + str(self.total_health))
             self.temp = 0
 
-    def draw(self):
-        text = self.font.render(str(self.total_health), 0,
-                                (255, 255, 255))
-        globalvars.surface.fill((0, 0, 0), self.rect)
-        globalvars.surface.blit(text, (globalvars.points_x,
-                                       globalvars.points_y))
+    # def draw(self, screen):
+        # text = self.font.render(str(self.total_health), 0,
+                                # (255, 255, 255))
+        # screen.fill((0, 0, 0), self.rect)
+        # screen.blit(text, (globalvars.points_x, globalvars.points_y))
 
 
-class HealthBar(pygame.sprite.Sprite):
+class Hud(pygame.sprite.Sprite):
     offset = globalvars.healthbar_offset_y
     offsetx = globalvars.healthbar_offset_x
-    total_health = Health.total_health
+    total_health = HealthNeedle.total_health
     width = globalvars.healthbar_width
-    temp = Health.temp  # if its changed, temp changes to 1, so it
-    #                   # doesn't update every frame
+    temp = HealthNeedle.temp  # if its changed, temp changes to 1, so it
+    #                         # doesn't update every frame
 
-    def __init__(self, health):
+    def __init__(self):
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
-        self.top = health.get_size().bottom
+        self.healthneedle = HealthNeedle()
+        self.top = self.healthneedle.get_size().bottom
         self.rect = pygame.Rect(self.offsetx, self.offset + self.top,
                                 5, 110)  # TODO: ? change
         self.image = pygame.Surface((self.width, 110))
         h_rect = pygame.Rect(0, 0, self.width, self.total_health)
         pygame.draw.rect(self.image, (255, 255, 255), h_rect)
-        self.healthobject = health
 
     def update(self):
-        self.temp = self.healthobject.get_temp()
-        # print(Health.total_health)
+        self.temp = self.healthneedle.get_temp()
+        # print(HealthNeedle.total_health)
         if self.temp != 0:
-            if self.total_health < self.healthobject.get_health():
+            if self.total_health < self.healthneedle.get_health():
                 max_h_rect = pygame.Rect(0, 0, self.width,
                                          globalvars.max_health)
-                pygame.draw.rect(self.image, (128, 128, 128), max_h_rect)
-            self.total_health = self.healthobject.get_health()
+                pygame.draw.rect(self.image, (128, 128, 128),
+                                 max_h_rect)
+            self.total_health = self.healthneedle.get_health()
             h_rect = pygame.Rect(
                 0, 0, self.width,
                 globalvars.max_health-self.total_health
             )
-            pygame.draw.rect(self.image, globalvars.bgcolor, h_rect)
+            pygame.draw.rect(self.image, globalvars.bg_color, h_rect)
             # print("Health Bar Decreased to"+str(self.total_health))
-
-#####################
-global points
-points = Points()
-globalvars.side_panel.add(points)
-global health
-health = Health()
-global healthbar
-healthbar = HealthBar(health)
-globalvars.side_panel.add(healthbar)
-globalvars.side_panel.add(health)
