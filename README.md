@@ -1,5 +1,6 @@
 # Pylaga-py3
 Pylaga-py3 is a simple remake of a classic game with a similar name, with some differences in gameplay, written with the pygame libs. Pylaga-py3 is a fork of Pylaga that works on Python 3 (including Kivy 1.8.0 for Python 3).
+[Pylaga screenshot](https://github.com/poikilos/pylaga/raw/master/screenshot.jpg)
 
 ## Authors
 Forked (Python 3 and new graphics, no globalvars) by: poikilos
