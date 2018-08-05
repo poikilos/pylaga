@@ -12,20 +12,31 @@ Pylaga-py3 is a simple remake of a classic game with a similar name, with some d
 ## How to install:
 
 ### Ubuntu/Debian:
+```bash
 sudo apt-get install python3 python3-pygame
-Run ./main.py
+python3 main.py
+````
 
 ### Other Linux:
-Install python and pygame (python 3, which is default on some distros such as Ubuntu)
-python pylaga.py
+* Install python and pygame (python 3, which is default on some distros such as Ubuntu)
+* `python3 main.py`
 
 ### Windows:
-Install python 3
-Install pygame for python 3
-doubleclick main.py
+* Install python 3 (custom install, then for "add python to system path" choose "run from hard drive")
+* Install pygame for python 3 (64-bit, unless you installed Python3 32-bit)
+* doubleclick main.py
 
 ## Changes:
-(2018-08-03 poikilos)
+### (2018-08-05)
+#### poikilos
+* combine Enemy, PlayerUnit, Bullet, EnemyBullet into one class
+* add particles
+* add empty.png so that sprite in spritegroup will be updated but not
+  drawn.
+* added multiple types of enemies
+* added winning screen
+### (2018-08-03 poikilos)
+#### poikilos
 * conform to PEP8
 * rename almost all variables and classes with consistent naming convention
 * fix unused but broken add_health method (used undefined local points instead of health param--so changed both to amount)
@@ -40,20 +51,17 @@ doubleclick main.py
 * eliminate mouse_is_anywhere in favor of get_selection that returns None if mouse over nothing (otherwise returns one of the menu strings now instead of a number)
 * rename menu_action to draw_dialog
 * combine init_menu, exit_menu, pause_menu into show_dialog
-(2018-08-05)
-* combine Enemy, PlayerUnit, Bullet, EnemyBullet into one class
-* add particles
-* add empty.png so that sprite in spritegroup will be updated but not
-  drawn.
-* added multiple types of enemies
-* added winning screen
-(2015-03-03)
-* (poikilos) (world.py) stopped using list of dirty rects (so-called "enemylist") that were erased before frame and were obtained by way of using draw method of sprite.RenderUpdates which is now replaced by sprite.Group which does not return dirty rects (to allow per-pixel alpha to be seen)--instead, clear whole screen then draw everything.
-(2015-03-01)
-* (poikilos) improved player ship graphics with alpha
-(2015-03-03)
-* (poikilos) (globalvars.py) change convert to convert_alpha so loaded images retain alpha channel
-(2015-02-24) (poikilos)
+### (2015-03-03)
+#### poikilos
+* (world.py) stopped using list of dirty rects (so-called "enemylist") that were erased before frame and were obtained by way of using draw method of sprite.RenderUpdates which is now replaced by sprite.Group which does not return dirty rects (to allow per-pixel alpha to be seen)--instead, clear whole screen then draw everything.
+### (2015-03-01)
+#### poikilos
+* improved player ship graphics with alpha
+### (2015-03-03)
+#### poikilos
+* (globalvars.py) change convert to convert_alpha so loaded images retain alpha channel
+### (2015-02-24)
+#### poikilos
 * (globalvars.py) prepended directory containing __file__ (py file) to DATADIR (such as to allow executing within Kivy)
 * (all files) Make comment capitalization and style match galamax-py3 for to make diff output more clear
 * (world.py) remove unecessary comments
@@ -70,8 +78,6 @@ TypeError: list indices must be integers, not float
 ```
 
 ### RJ Marsan's TO DO LIST:
-* correct implementation of stage progression
-* other misc. things to make the game look purrty
 * proper transitions
 
 ### RJ Marsan's CHANGES:
