@@ -38,6 +38,9 @@ if not pygame.font:
 class App:
     def __init__(self, resolution):
         pygame.init()
+        # pygame.mixer.init(frequency=44100, size=-16, channels=2,
+                          # buffer=4096)
+        pygame.mixer.init(frequency=44100, channels=2)
         self.clock = pygame.time.Clock()
         data_sub_dir = "data"
         ced = os.path.dirname(__file__)  # current executable directory
@@ -197,7 +200,7 @@ class App:
 
 
     def load_file(self, name, repress_error_enable=False,
-                  try_dirs=None):
+                  try_dirs=None, file_type='image'):
         try:
             if try_dirs is None:
                 try_dirs = [
@@ -208,7 +211,10 @@ class App:
             for parent in try_dirs:
                 path = os.path.join(parent, name)
                 if os.path.isfile(path):
-                    return pygame.image.load(path).convert_alpha()
+                    if file_type == 'image':
+                        return pygame.image.load(path).convert_alpha()
+                    else:
+                        return pygame.mixer.Sound(path)
         except:
             if not repress_error_enable:
                 print("Failed to load file "+name)

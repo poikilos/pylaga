@@ -85,6 +85,8 @@ class World:
 
         # Load enemy ship image.
         self.e_ship_image = self.load_file('eship.png')
+        self.e_ex_sound = self.app.load_file('eship-ex.wav',
+                                             file_type='sound')
 
         self.menus = None
         self.tock = 0
@@ -174,7 +176,8 @@ class World:
                                   self.swarm, e_max_health,
                                   self.explosion_images, self.particles,
                                   ai_enable=True,
-                                  value=stage_data['e_h'])
+                                  value=stage_data['e_h'],
+                                  ex_sound=self.e_ex_sound)
                 new_enemy.set_xy(
                     xmin +
                     enemycol * (enemy_width +
@@ -213,14 +216,9 @@ class World:
                 for bullet in bullets:
                     point = pygame.sprite.collide_mask(sprite,
                                                        bullet)
-                    if point is None:
-                        print("point is None")
-                    if not sprite.get_is_alive():
-                        print("sprite is already dead")
                     if ((point is not None) and
                             (not self.particle_ban) and
                             (sprite.get_is_alive())):
-                        print("added particle")
                         particle = Entity('particle',
                                           self.shield_hit_images,
                                           part_speed,
@@ -235,8 +233,8 @@ class World:
                         y = y1 + point[1] - particle.rect.height / 2
                         particle.set_xy(x, y)
                         self.particles.add(particle)
-
-                sprite.set_hit(1)
+                if self.p_unit.get_is_alive():
+                    sprite.set_hit(1)
                 # if sprite.state < 0:
                     # sprite.set_state(0)
                 points = sprite.take_value()  # only once & if health 0
@@ -270,8 +268,8 @@ class World:
                     y = y1 + point[1] - particle.rect.height / 2
                     particle.set_xy(x, y)
                     self.particles.add(particle)
-            if self.p_unit.state < 0:
-                self.p_unit.set_hit(1)
+            if sprite.get_is_alive():  # self.p_unit
+                sprite.set_hit(1)
                 self.hud.healthbar.set_health(self.p_unit.health)
 
         # if pygame.sprite.spritecollideany(self.p_unit,
@@ -505,6 +503,7 @@ class World:
     ####################################################################
 
     def start(self, menus):
+        self.won = False
         self.particle_ban = False
         self.wait_stop_count = -1  # -1 means do not count down to menu
         self.menus = menus

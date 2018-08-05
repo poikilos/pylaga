@@ -67,7 +67,8 @@ class Entity(pygame.sprite.Sprite):
     def __init__(self, what, images, speed, angle, spritegroup, health,
                  explosion_images, particles, offscreen_remove=False,
                  ai_enable=False, anim_done_remove=False,
-                 value=1, rotate_surf_enable=True):
+                 value=1, rotate_surf_enable=True,
+                 temper_sound=None, ex_sound=None):
         """Constructor
 
         Sequential arguments:
@@ -111,8 +112,13 @@ class Entity(pygame.sprite.Sprite):
         self.value = value
         self.ai_enable = ai_enable
         temper_frame = int(self.temper / self.temper_delay)
+        self.temper_sound_frame_i = 0
         self.rotate_surf_enable = rotate_surf_enable
+        self.temper_sound = temper_sound
+        self.ex_sound = ex_sound
+        self.play_temper_sound_enable = True
         if self.images is not None:
+            self.temper_sound_frame_i = len(self.images) - 1
             if self.rotate_surf_enable:
                 self.image = pygame.transform.rotate(
                     self.images[temper_frame],
@@ -129,8 +135,8 @@ class Entity(pygame.sprite.Sprite):
             else:
                 print("ERROR in Entity __init__: no image for " +
                       self.what)
-
-        self.mask = pygame.mask.from_surface(self.image)
+        if self.image is not None:
+            self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
 
     def get_value(self):
@@ -216,6 +222,11 @@ class Entity(pygame.sprite.Sprite):
                 self.set_state(0)
         if self.temper > 0:
             temper_frame = int(self.temper/self.temper_delay)
+            if temper_frame == self.temper_sound_frame_i:
+                if self.play_temper_sound_enable:
+                    self.play_temper_sound_enable = False
+                    if self.temper_sound is not None:
+                        pygame.mixer.Sound.play(self.temper_sound)
             if temper_frame >= len(self.images):
                 if self.anim_done_remove:
                     self.spritegroup.remove(self)
@@ -366,7 +377,8 @@ class Entity(pygame.sprite.Sprite):
                                      None,
                                      None,
                                      offscreen_remove=True,
-                                     anim_done_remove=True)
+                                     anim_done_remove=True,
+                                     temper_sound=self.ex_sound)
                     new_exp.temper = 1  # begin particle decay
                     new_exp.parent_what = self.what
                     x, y = self.rect.center
