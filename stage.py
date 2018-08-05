@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """stage manager for pylaga
 
-Needs lots of improvement
-...thats never a good thing to hear
+Loads and provides the data for all stages of the game.
+Mutates when next_stage is called.
 """
 
 __author__ = ("2007-02-20 Derek Mcdonald (original),"
@@ -19,23 +19,38 @@ import random
 
 
 class Stage:
-    enemy_stages = [(5, 2), (6, 3), (7, 4), (8, 4), (9, 4)]
-    current_stage = 0
-
     def __init__(self, enemymanager, playermanager):
         self.enemymanager = enemymanager
         self.playermanager = playermanager
 
+        self.stages = [
+            {'x_e_count':4, 'y_e_count':1, 'e':'eship', 'e_h':1},
+            {'x_e_count':5, 'y_e_count':2, 'e':'eship', 'e_h':1},
+            {'x_e_count':5, 'y_e_count':3, 'e':'eship', 'e_h':1},
+            {'x_e_count':6, 'y_e_count':1, 'e':'cship', 'e_h':4},
+            {'x_e_count':1, 'y_e_count':1, 'e':'bship', 'e_h':30}
+        ]
+        self.current_i = 0
+
     def add_stage(self, x, y):
-        self.enemy_stages.append((x, y))
+        self.stages.append({'x_e_count':x, 'y_e_count':y})
+
+    def is_last_stage(self):
+        return (self.current_i + 1) >= len(self.stages)
 
     def next_stage(self):
-        if len(self.enemy_stages) > self.current_stage + 1:
-            self.current_stage += 1
+        if not self.is_last_stage():
+            self.current_i += 1
         self.enemymanager.current_transition = 0
 
-    def set_stage(self, stage):
-        self.current_stage = stage
+    def set_stage_number(self, stage):
+        self.current_i = stage
 
-    def get_stage(self):
-        return self.enemy_stages[self.current_stage]
+    def get_data(self):
+        if self.current_i < len(self.stages):
+            return self.stages[self.current_i]
+        else:
+            msg = ("ERROR in Stage get_data: stage index " +
+                   str(self.current_i) + " is out of range")
+            print(msg)
+            return {'ERROR':msg}

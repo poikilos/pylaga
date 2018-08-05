@@ -19,10 +19,8 @@ import math
 import random
 import time
 from pygame.locals import*
-from bullet import Bullet, EnemyBullet
 from background import BackgroundManager
-from enemy import Enemy, Swarm
-from player import PlayerUnit
+from entity import Entity, Swarm
 from stage import Stage
 from hud import StatCounter, Hud
 from menu import Menu
@@ -46,6 +44,12 @@ class World:
         # tock started out random, but now is an important variable.
         # It is a frames count, used for periodic updates on certain
         # frames.
+        self.won = False
+        self.won_msg = "WINNER!"
+        self.particle_ban = False
+        self.wait_stop_count = -1  # -1 means do not count
+        self.wait_stop_max = 120  # wait this many frames after decay
+                                  # before showing menu
         self.tock = 0
         self.stage_e_bullet_odds = 15
         self.mouse_rect = None
@@ -64,22 +68,20 @@ class World:
         # spritegroup & then all one needs to do is go through these &
         # call functions & stuff.
         # It makes sense in here *points to brain*
-        self.p_spritegroup = pygame.sprite.Group()
+        self.p_spritegroup = Swarm(self.world_rect)
+        self.particles = Swarm(self.world_rect)
         self.hud_spritegroup = pygame.sprite.Group()
 
-        self.explosion_images = []
-        self.explosion_images.append(self.load_file('explosion1.bmp'))
-        self.explosion_images.append(self.load_file('explosion2.bmp'))
-        self.explosion_images.append(self.load_file('explosion3.bmp'))
-        self.explosion_images.append(self.load_file('explosion4.bmp'))
-        self.explosion_images.append(self.load_file('explosion5.bmp'))
+        self.explosion_images = self.app.load_seq('ex-medium')
+        self.shield_hit_images = self.app.load_seq('shield_hit-tiny')
 
         # Load player sprite as image list.
-        self.p_unit_images = []
-        self.p_unit_images.append(self.load_file('pship.png'))
-        self.p_unit_images.append(self.load_file('pship1.png'))
-        self.p_unit_images.append(self.load_file('pship2.png'))
-        self.p_unit_images.append(self.load_file('pship3.png'))
+        self.p_unit_images = self.app.load_seq('pship')
+        # self.p_unit_images = []
+        # self.p_unit_images.append(self.load_file('pship.png'))
+        # self.p_unit_images.append(self.load_file('pship1.png'))
+        # self.p_unit_images.append(self.load_file('pship2.png'))
+        # self.p_unit_images.append(self.load_file('pship3.png'))
 
         # Load enemy ship image.
         self.e_ship_image = self.load_file('eship.png')
@@ -90,15 +92,16 @@ class World:
         self.leftkeydown = 0
         self.rightkeydown = 0
         # self.enemylist = []  # list of dirty rects
-        self.swarm = Swarm(self.world_rect, self.stage_e_bullet_odds)
+        self.swarm = Swarm(self.world_rect,
+                           shoot_odds=self.stage_e_bullet_odds)
         self.stage = Stage(self.swarm, self.p_spritegroup)
 
         self.p_shot_image = self.load_file('laser.png')
-        self.e_shot_image = self.load_file('elaser.bmp')
+        self.e_shot_image = self.load_file('elaser.png')
 
-        self.p_bullet_spritegroup = pygame.sprite.Group()
-        self.e_bullet_spritegroup = pygame.sprite.Group()
-        self.bullet_width = 10
+        self.p_bullet_spritegroup = Swarm(self.world_rect)
+        self.e_bullet_spritegroup = Swarm(self.world_rect)
+        # self.bullet_width = 10
         sc_rect = pygame.Rect(0, 5, 10, 10)
         self.statcounter = StatCounter(sc_rect)
         self.hud_spritegroup.add(self.statcounter)
@@ -111,7 +114,7 @@ class World:
         self.hud = Hud(self.hud_rect, (64, 64, 64), (255, 255, 255),
                        100)
         self.hud_spritegroup.add(self.hud)
-        self.hud_spritegroup.add(self.hud.healthneedle)
+        self.hud_spritegroup.add(self.hud.healthbar)
 
     def load_file(self, name):
         return self.app.load_file(name)
@@ -129,13 +132,14 @@ class World:
         self.bend_rate = 0.02
         self.leftkeydown = 0
         self.rightkeydown = 0
-        self.hud.healthneedle.set_health(self.hud.max_health)
+        self.hud.healthbar.set_health(self.hud.max_health)
         self.statcounter.set_points(0)
-        self.stage.set_stage(-1)  # hax
+        self.stage.set_stage_number(-1)  # hax
         self.stage_e_bullet_odds = 100
         self.swarm.empty()
         self.p_bullet_spritegroup.empty()
         self.p_spritegroup.empty()
+        self.particles.empty()
         self.e_bullet_spritegroup.empty()
 
     # Define function to draw player ship on X, Y plane
@@ -156,14 +160,22 @@ class World:
         enemy_spacing_x = 15
         enemy_spacing_y = 10
         init_enemy_speed = 3
-        for enemycol in range(self.stage.get_stage()[0]):
+        angle = -90  # cartesian
+
+        stage_data = self.stage.get_data()
+        e_max_health = stage_data['e_h']
+        self.e_ship_image = self.app.load_file(stage_data['e']+".png")
+        for enemycol in range(stage_data['x_e_count']):
             # Now for the rows
-            for enemyrow in range(self.stage.get_stage()[1]):
+            for enemyrow in range(stage_data['y_e_count']):
                 # Make a new enemy object:
-                new_enemy = Enemy(self.swarm, init_enemy_speed,
-                                  self.e_ship_image,
-                                  self.explosion_images)
-                new_enemy.move_by(
+                new_enemy = Entity('eship', [self.e_ship_image],
+                                  init_enemy_speed, angle,
+                                  self.swarm, e_max_health,
+                                  self.explosion_images, self.particles,
+                                  ai_enable=True,
+                                  value=stage_data['e_h'])
+                new_enemy.set_xy(
                     xmin +
                     enemycol * (enemy_width +
                                 enemy_spacing_x),
@@ -176,7 +188,7 @@ class World:
                     enemycol * (enemy_width +
                                 enemy_spacing_x),
                     xmax -
-                    (self.stage.get_stage()[0] - enemycol) *
+                    (stage_data['x_e_count'] - enemycol) *
                     (enemy_height +
                      enemy_spacing_x)
                 )
@@ -189,25 +201,94 @@ class World:
     # of the enemy objects i think i might switch to the objects, but
     # still keep this function just hand the computing to the object
     def test_collision(self):
-        todie = pygame.sprite.groupcollide(self.swarm,
+        part_speed = 1
+        part_angle = -90
+        part_health = 1
+        e_hit = pygame.sprite.groupcollide(self.swarm,
                                            self.p_bullet_spritegroup,
                                            0, 0)
-        for enemy, bullet in todie.items():
-            self.p_bullet_spritegroup.remove(bullet)
-            enemy.set_state(0)
-            self.statcounter.add_points(1)
-        if pygame.sprite.spritecollideany(self.p_unit,
-                                          self.e_bullet_spritegroup):
-            self.p_unit.set_hit()
-            self.hud.healthneedle.hit()
+        for sprite, bullets in e_hit.items():
+            # print("removed " + str(bullet)
+            if sprite.get_is_alive():
+                for bullet in bullets:
+                    point = pygame.sprite.collide_mask(sprite,
+                                                       bullet)
+                    if point is None:
+                        print("point is None")
+                    if not sprite.get_is_alive():
+                        print("sprite is already dead")
+                    if ((point is not None) and
+                            (not self.particle_ban) and
+                            (sprite.get_is_alive())):
+                        print("added particle")
+                        particle = Entity('particle',
+                                          self.shield_hit_images,
+                                          part_speed,
+                                          part_angle, self.particles,
+                                          part_health,
+                                          None,
+                                          None,
+                                          anim_done_remove=True)
+                        particle.temper = 1  # start particle death
+                        x1, y1 = sprite.get_pos()  # top left
+                        x = x1 + point[0] - particle.rect.width / 2
+                        y = y1 + point[1] - particle.rect.height / 2
+                        particle.set_xy(x, y)
+                        self.particles.add(particle)
+
+                sprite.set_hit(1)
+                # if sprite.state < 0:
+                    # sprite.set_state(0)
+                points = sprite.take_value()  # only once & if health 0
+                if points > 0:
+                    self.statcounter.add_points(points)
+            self.p_bullet_spritegroup.remove(bullets)
+
+
+
+        p_hit = pygame.sprite.groupcollide(self.p_spritegroup,
+                                           self.e_bullet_spritegroup,
+                                           0, 0)
+        for sprite, bullets in p_hit.items():
+            for bullet in bullets:
+                # New in pygame 1.8.0:
+                point = pygame.sprite.collide_mask(sprite, bullet)
+                if not sprite.get_is_alive():
+                    continue
+                if (point is not None) and (not self.particle_ban):
+                    particle = Entity('particle',
+                                      self.shield_hit_images,
+                                      part_speed,
+                                      part_angle, self.particles,
+                                      part_health,
+                                      None,
+                                      None,
+                                      anim_done_remove=True)
+                    particle.temper = 1  # start particle death
+                    x1, y1 = sprite.get_pos()  # top left
+                    x = x1 + point[0] - particle.rect.width / 2
+                    y = y1 + point[1] - particle.rect.height / 2
+                    particle.set_xy(x, y)
+                    self.particles.add(particle)
+            if self.p_unit.state < 0:
+                self.p_unit.set_hit(1)
+                self.hud.healthbar.set_health(self.p_unit.health)
+
+        # if pygame.sprite.spritecollideany(self.p_unit,
+                                          # self.e_bullet_spritegroup):
+            # self.p_unit.set_hit(1)
+            # self.hud.healthbar.set_health(self.p_unit.health)
 
     # if there are no enemys left, go to the next stage
     def check_done(self):
         if not self.swarm:
-            self.stage.next_stage()
-            if self.stage_e_bullet_odds > 15:
-                self.stage_e_bullet_odds -= 15
-            self.generate_enemies()
+            if self.stage.is_last_stage():
+                self.won = True  # TODO: make ending screen
+            if not self.won:
+                self.stage.next_stage()
+                if self.stage_e_bullet_odds > 15:
+                    self.stage_e_bullet_odds -= 15
+                self.generate_enemies()
 
     # checks to see if we can expand the ranges of the bots so its nice
     # and.... umm... nice.
@@ -234,23 +315,43 @@ class World:
 
     # major hack just to get this thing playable..... sorry
     def again(self):
-        if self.hud.healthneedle.get_health() <= 0:
-            return False
+        if self.hud.healthbar.get_health() <= 0:
+            self.particle_ban = True
+        if self.p_unit.get_is_decayed():
+            self.particle_ban = True
+            # also wait for particles to finish for prettier ending
+            if len(self.particles) < 1:
+                if self.wait_stop_count < 0:
+                    print("player unit decayed, counting down to menu")
+                    self.wait_stop_count = 0
+                # return False
+        if self.wait_stop_count >= 0:
+            self.wait_stop_count += 1
+            if self.wait_stop_count > self.wait_stop_max:
+                return False
+        if self.won:
+            if self.wait_stop_count < 0:
+                print("won game, counting down to menu")
+                self.wait_stop_count = 0
         return True
 
-    # this is called if the player shoots
+    # this is called if the player initiates shooting
     def pshoot(self):
-        sx = self.p_unit.rect.centerx - self.bullet_width / 2
-        sy = self.p_unit.rect.top
-        self.p_unit.shoot(self.p_shot_image, self.p_bullet_spritegroup,
-                          sx, sy)
+        # sx = self.p_unit.rect.centerx -
+        #      self.p_shot_image.rect.width / 2
+        # sy = self.p_unit.rect.top +
+        #      self.p_shot_image.rect.height * .75
+        if self.p_unit.get_is_alive():
+            self.p_unit.shoot(self.p_shot_image,
+                              self.p_bullet_spritegroup)
+            # self.p_unit.shoot_from(self.p_shot_image,
+            #                        self.p_bullet_spritegroup,
+            #                        sx, sy, self.p_unit.angle)
 
-    # draws the bullet.... duh. come on dude.
     def draw_bullets(self):
         self.p_bullet_spritegroup.draw(self.screen)
         self.e_bullet_spritegroup.draw(self.screen)
 
-    # ...
     def draw_hud(self):
         if self.tock % 5 == 0:
             self.hud_spritegroup.update()
@@ -288,8 +389,11 @@ class World:
         self.test_collision()
         self.check_rows()
         self.bg.update()
-        self.swarm.shoot(self.e_shot_image, self.e_bullet_spritegroup)
+        if self.p_unit.get_is_alive():
+            self.swarm.shoot(self.e_shot_image, self.e_bullet_spritegroup)
         self.p_unit.update()
+        for particle in self.particles:
+            particle.update()
 
     def draw(self):
         self.screen.fill(self.bg.bg_color)
@@ -299,6 +403,7 @@ class World:
         self.draw_bullets()
         self.draw_player_units()
         self.emove()
+        self.particles.draw(self.screen)
         self.draw_hud()
         # if self.p_unit is not None:
             # if self.p_unit.rect is not None:
@@ -331,7 +436,9 @@ class World:
         smooth_scroll_var1 = 10
         smooth_scroll_var2 = 2
         pygame.event.pump()  # redraw Window so OS knows not frozen
-        pause_menu_strings = ("RESUME", "ABOUT", "HELP", "EXIT")
+        pause_menu_strings = ["RESUME", "ABOUT", "HELP", "EXIT"]
+        if self.won:
+            pause_menu_strings.insert(0, self.won_msg)
         for event in events:
             if event.type == QUIT:
                 self.on_exit()
@@ -398,8 +505,15 @@ class World:
     ####################################################################
 
     def start(self, menus):
+        self.particle_ban = False
+        self.wait_stop_count = -1  # -1 means do not count down to menu
         self.menus = menus
-        self.p_unit = PlayerUnit(self.p_unit_images)
+        p_speed = 10
+        p_max_health = 5
+        self.p_unit = Entity('pship', self.p_unit_images, p_speed, 90.0,
+                             self.p_spritegroup, p_max_health,
+                             self.explosion_images,
+                             self.particles)
         print("Clearing vars...")
         self.clear_vars()  # does reset player unit (p_unit) position
         self.p_spritegroup.add(self.p_unit)
@@ -432,7 +546,7 @@ class World:
 
             # applies the smart screen updating
             pygame.display.update()
-            # pygame.display.update(self.enemylist)
+            # TODO: ? pygame.display.update(self.enemylist)
             # self.enemylist = []
 
             # Pauses and waits

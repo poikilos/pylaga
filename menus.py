@@ -17,7 +17,15 @@ import math
 import random
 from menu import Menu
 
-# takes a tuple of menuitem strings as input
+# takes a form dict as input such as:
+# pages_dict = {
+#     "PLAY":{},
+#     "ABOUT":{
+#         "scroll_text":"WRITTEN BY\nauthor1\nauthor2\nauthor3"
+#     }
+# }
+# if no pages_dict is specified, the buttons will do actions but not
+# go to a separate screen
 # a generic menu class
 # very effective
 # The app param must at least contain the following pygame objects:

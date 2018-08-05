@@ -39,6 +39,13 @@ doubleclick main.py
 * eliminate mouse_is_anywhere in favor of get_selection that returns None if mouse over nothing (otherwise returns one of the menu strings now instead of a number)
 * rename menu_action to draw_dialog
 * combine init_menu, exit_menu, pause_menu into show_dialog
+(2018-08-05)
+* combine Enemy, PlayerUnit, Bullet, EnemyBullet into one class
+* add particles
+* add empty.png so that sprite in spritegroup will be updated but not
+  drawn.
+* added multiple types of enemies
+* added winning screen
 (2015-03-03)
 * (poikilos) (world.py) stopped using list of dirty rects (so-called "enemylist") that were erased before frame and were obtained by way of using draw method of sprite.RenderUpdates which is now replaced by sprite.Group which does not return dirty rects (to allow per-pixel alpha to be seen)--instead, clear whole screen then draw everything.
 (2015-03-01)
@@ -57,7 +64,7 @@ doubleclick main.py
 * cast division result to int before being used as index to prevent the following error:
 ```
   File "player.py", line 75, in update
-    self.image=playership[self.state/explosion_speed]
+    self.image=playership[self.temper/temper_delay]
 TypeError: list indices must be integers, not float
 ```
 

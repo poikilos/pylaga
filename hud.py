@@ -1,6 +1,6 @@
 """hud for pylaga
 
-Blah. the display. StatCounter, Hud and HealthNeedle
+Blah. the display. StatCounter, Hud and HealthBar
 """
 
 __author__ = ("2007-02-20 Derek Mcdonald (original),"
@@ -20,15 +20,15 @@ import random
 # to make it globally available but also writable
 # meh
 class StatCounter(pygame.sprite.Sprite):
-    total_points = 0
-    tmpr = 0  # if above 0, don't do periodic calculations
-    pointstr = "Score"
 
     def __init__(self, rect, font_size=14, font_name="freesansbold.ttf",
                  bg_color=(0, 0, 0), aa=True):
+        super(StatCounter, self).__init__()  # initialize sprite
+        self.total_points = 0
+        self.is_dirty = False  # if True, change graphics
+        self.pointstr = "Score"
         self.aa = aa
         self.bg_color = bg_color
-        pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.font_size = font_size
         self.font = pygame.font.Font(font_name, self.font_size)
         self.rect = rect
@@ -49,25 +49,25 @@ class StatCounter(pygame.sprite.Sprite):
         pygame.Surface.blit(self.image, self.caption_img,
                             self.caption_rect)
         pygame.Surface.blit(self.image, self.pointsimg, self.pointsrect)
-        self.tmpr = 1
+        self.is_dirty = True
 
     def add_points(self, amount):
         self.total_points += amount
-        self.tmpr = 1
+        self.is_dirty = True
 
     def set_points(self, amount):
         self.total_points = amount
-        self.tmpr = 1
+        self.is_dirty = True
 
     def get_points(self):
         return self.total_points
 
     def sub_points(self, amount):
         self.total_points -= amount
-        self.tmpr = 1
+        self.is_dirty = True
 
     def update(self):
-        if self.tmpr != 0:
+        if self.is_dirty is True:
             self.image.fill(self.bg_color, self.pointsrect)
             self.pointsimg = self.font.render(str(self.total_points),
                                               self.aa, (255, 255, 255))
@@ -75,7 +75,7 @@ class StatCounter(pygame.sprite.Sprite):
             self.pointsrect.move_ip(0, self.caption_rect.height)
             pygame.Surface.blit(self.image, self.pointsimg,
                                 self.pointsrect)
-            self.tmpr = 0
+            self.is_dirty = False
 
     # def draw(self, screen):
         # text = self.font.render(self.pointstr +
@@ -87,19 +87,19 @@ class StatCounter(pygame.sprite.Sprite):
 
 ###################
 # 2 pieces of text on 1 image
-class HealthNeedle(pygame.sprite.Sprite):
+class HealthBar(pygame.sprite.Sprite):
 
     def __init__(self, health, text_color, font_size=14,
                  font_name="freesansbold.ttf",
                  bg_color=(0, 0, 0), aa=True):
+        super(HealthBar, self).__init__()  # initialize sprite
         self.aa = aa
         self.bg_color = bg_color
-        self.tmpr = 0  # if above 0, don't do periodic calculations
+        self.is_dirty = False  # if True, change graphics
         self.healthstr = "Shield"
         self.health = health
         self.font_size = font_size
         self.text_color = text_color
-        pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.font = pygame.font.Font(font_name, self.font_size)
         self.rect = pygame.Rect(0, 50, 10, 20)
         self.caption_img = self.font.render(self.healthstr,
@@ -116,40 +116,35 @@ class HealthNeedle(pygame.sprite.Sprite):
         pygame.Surface.blit(self.image, self.caption_img,
                             self.caption_rect)
         pygame.Surface.blit(self.image, self.healthimg, self.healthrect)
-        tmpr = 1
+        is_dirty = True
 
     def add_health(self, amount):
         if amount < 0:
             print("WARNING in add_health: added negative number"
                   "so subtracting!")
         self.health += amount
-        self.tmpr = 1
+        self.is_dirty = True
 
     def set_health(self, health):
         self.health = health
-        self.tmpr = 1
+        self.is_dirty = True
 
     def get_health(self):
         return self.health
 
-    def get_temper(self):
-        return self.tmpr
+    def get_is_dirty(self):
+        return self.is_dirty
 
     def get_dest_rect(self):
         return pygame.Rect.union(self.healthrect, self.caption_rect)
 
-    def sub_health(self, amount):
-        if amount < 0:
-            print("WARNING in sub_health: subtracted negative number"
-                  "so adding!")
-        self.health -= amount
-        self.tmpr = 1
-
-    def hit(self, amount=1):
-        self.sub_health(amount)
+    def set_health(self, health):
+        if health != self.health:
+            self.is_dirty = True
+        self.health = health
 
     def update(self):
-        if self.tmpr != 0:
+        if self.is_dirty is True:
             self.image.fill(self.bg_color, self.healthrect)
             self.healthimg = self.font.render(str(self.health), self.aa,
                                               self.text_color)
@@ -158,7 +153,7 @@ class HealthNeedle(pygame.sprite.Sprite):
             pygame.Surface.blit(self.image, self.healthimg,
                                 self.healthrect)
             # print("Health Decreased to " + str(self.health))
-            self.tmpr = 0
+            self.is_dirty = False
 
     # def draw(self, screen):
         # text = self.font.render(str(self.health), self.aa,
@@ -170,14 +165,12 @@ class HealthNeedle(pygame.sprite.Sprite):
 class Hud(pygame.sprite.Sprite):
 
     def __init__(self, rect, bg_color, fg_color, max_health):
-        pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
+        super(Hud, self).__init__()  # initialize sprite
         self.rect = rect
-        self.healthneedle = HealthNeedle(max_health, fg_color)
-        # if health changed, tmpr changes to 1,
-        # so health doesn't decrease every frame
-        self.health = self.healthneedle.health
-        self.rect.top = self.healthneedle.get_dest_rect().bottom
-        self.rect.height -= self.healthneedle.get_dest_rect().height
+        self.healthbar = HealthBar(max_health, fg_color)
+        self.health = self.healthbar.health
+        self.rect.top = self.healthbar.get_dest_rect().bottom
+        self.rect.height -= self.healthbar.get_dest_rect().height
         self.max_health = max_health
         self.bg_color = bg_color
         self.fg_color = fg_color
@@ -187,14 +180,14 @@ class Hud(pygame.sprite.Sprite):
 
 
     def update(self):
-        # print(self.health)
-        if self.healthneedle.get_temper() != 0:
-            if self.health != self.healthneedle.get_health():
+        # print("health: " + str(self.health))
+        if self.healthbar.get_is_dirty():
+            if self.health != self.healthbar.get_health():
                 max_h_rect = pygame.Rect(0, 0, self.rect.width,
                                          self.max_health)
                 pygame.draw.rect(self.image, self.fg_color,
                                  max_h_rect)
-                self.health = self.healthneedle.get_health()
+                self.health = self.healthbar.get_health()
             h_rect = pygame.Rect(0, 0, self.rect.width,
                                  self.max_health-self.health)
             pygame.draw.rect(self.image, self.bg_color, h_rect)

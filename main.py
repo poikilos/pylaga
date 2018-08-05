@@ -18,10 +18,7 @@ import sys
 import math
 import random
 from pygame.locals import*
-from bullet import Bullet, EnemyBullet
 from background import BackgroundManager
-from enemy import Enemy, Swarm
-from player import PlayerUnit
 from stage import Stage
 from hud import *
 from menu import Menu
@@ -49,7 +46,7 @@ class App:
         pygame.display.set_caption("Pylaga " + __version__)
         self.world = World(self, self.screen)
         logo_image = self.load_file("screen-intro.png")
-        cursor_image = self.load_file('pship.png')
+        cursor_image = self.load_file('pship0.png')
         about_string = '''
             PYLAGA
 
@@ -75,17 +72,23 @@ class App:
         help_string = '''
             MOVE: move mouse
             FIRE: click/tap
-            MENU: Esc
-            MENU controls: mouse or arrows and enter key
-                           (Esc or q key to resume/retry)
-            EXIT: choose Exit from menu by clicking
-                  or selecting then pressing enter
+            MENU: Escape ("Esc") key
+              MENU controls: click/tap a choice, or use arrows and enter key
+                                          (Esc or q key to resume/retry)
+            EXIT: In the menu, click EXIT
+                      (or select EXIT with arrows then press Enter key)
         '''
-        pages_dict = {}
-        pages_dict['ABOUT'] = {}
-        pages_dict['ABOUT']['scroll_text'] = about_string
-        pages_dict['HELP'] = {}
-        pages_dict['HELP']['scroll_text'] = help_string
+        pages_dict = {
+            'ABOUT': {
+                'scroll_text': about_string
+            },
+            'HELP': {
+                'scroll_text': help_string
+            }
+        }
+        # pages_dict['ABOUT']['scroll_text'] = about_string
+        # pages_dict['HELP'] = {}
+        # pages_dict['HELP']['scroll_text'] = help_string
         self.menus = Menus(self.world.statcounter, self, logo_image,
                            cursor_image, pages_dict)
         init_menu_strings = ("PLAY", "ABOUT", "HELP", "EXIT")
@@ -93,10 +96,12 @@ class App:
         print("starting world...")
         self.world.start(self.menus)
         tries = 1
-        retry_menu_strings = ("RETRY", "ABOUT", "HELP", "EXIT",
+        retry_menu_strings = ["RETRY", "ABOUT", "HELP", "EXIT",
                              "Score: %s" %
-                             world.statcounter.get_points()
-        )
+                             self.world.statcounter.get_points()
+        ]
+        if self.world.won:
+            retry_menu_strings.insert(0, self.world.won_msg)
         while ((not self.menus.get_bool('exit')) and
                (self.menus.show_dialog(retry_menu_strings,
                                        cursor_spin=-1.0))):
@@ -126,12 +131,87 @@ class App:
             print(message)
         raise
 
-    def load_file(self, filename):
+    def zero_padded(self, i, min_digits):
+        s = str(i)
+        if len(s) < min_digits:
+            s = '0'*(min_digits-len(s)) + s
+        return s
+
+    def get_seq_info(self, name_except_number, dot_ext=".png"):
+        results = {'min_digits':None, 'first_i':None, 'directory':None,
+                   'tried_paths':[], 'found':False}
+        try_dirs = [
+            '.',
+            self.DATA_PATH,
+            os.path.dirname(os.path.abspath(__file__))
+        ]
+        no_pad_is_this_length = 6
+        for parent in try_dirs:
+            for min_digits in range(no_pad_is_this_length):
+                for first_i in range(2):
+                    name = (name_except_number +
+                            self.zero_padded(first_i, min_digits) +
+                            dot_ext)
+                    path = os.path.join(parent, name)
+                    if os.path.isfile(path):
+                        results['min_digits'] = min_digits
+                        results['first_i'] = first_i
+                        results['directory'] = parent
+                        results['found'] = True
+                        return results
+                    else:
+                        results['tried_paths'].append(path)
+        return results
+
+
+    def load_seq(self, name_except_number, dot_ext=".png",
+                 min_digits=0):
+        results = None
+        info = self.get_seq_info(name_except_number)
+        if info['found']:
+            results = []
+            i = info['first_i']
+            while True:
+                name = (name_except_number +
+                        self.zero_padded(i, info['min_digits']) +
+                        dot_ext)
+                path = os.path.join(info['directory'], name)
+                if os.path.exists(path):
+                    surf = self.load_file(name,
+                                          try_dirs=[info['directory']])
+                    if surf is not None:
+                        results.append(surf)
+                        i += 1
+                    else:
+                        print("ERROR in load_seq: image unreadable: " +
+                              path)
+                        break
+                else:
+                    break  # no errors, just no more images left in seq
+        else:
+            print("No png sequence found named " + name_except_number +
+                  ". Tried:")
+            for try_path in results['tried_paths']:
+                print("  " + try_path)
+        return results
+
+
+    def load_file(self, name, repress_error_enable=False,
+                  try_dirs=None):
         try:
-            path = os.path.join(self.DATA_PATH, filename)
-            return pygame.image.load(path).convert_alpha()
+            if try_dirs is None:
+                try_dirs = [
+                    '.',
+                    self.DATA_PATH,
+                    os.path.dirname(os.path.abspath(__file__))
+                ]
+            for parent in try_dirs:
+                path = os.path.join(parent, name)
+                if os.path.isfile(path):
+                    return pygame.image.load(path).convert_alpha()
         except:
-            print("Failed to load file "+filename)
+            if not repress_error_enable:
+                print("Failed to load file "+name)
         return None
 
 

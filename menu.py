@@ -153,7 +153,7 @@ class Menu:
                                   self.shipselectorsize[1])
         self.selectedimg.blit(self.final_cursor, cursor_rect)
         screen.blit(self.selectedimg, self.selectedrect)
-        # pygame.display.update(self.selectedrect)
+        # TODO: ? pygame.display.update(self.selectedrect)
 
     # simple methods to move selction up or down
     def change_selection_up(self, screen):

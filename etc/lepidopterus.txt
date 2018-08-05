@@ -1,0 +1,1 @@
+for lepidopterus 2, apply 1.28 gamma in GIMP levels after rendering.

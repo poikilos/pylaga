@@ -15,7 +15,6 @@ import sys
 import math
 import random
 
-
 # makes a background that moves and stuff
 class BackgroundManager(pygame.sprite.Sprite):
 
@@ -33,8 +32,10 @@ class BackgroundManager(pygame.sprite.Sprite):
             self.add_star()
 
     def update(self):
-        # self.prev_star_rects = [pygame.Rect(st) for st in self.star_rects \
-        # if st.top <= self.bg_rect.bottom]
+        # self.prev_star_rects = [
+        #     pygame.Rect(st) for st in self.star_rects \
+        #     if st.top <= self.bg_rect.bottom
+        # ]
         # ugh thanks guy online, this saved me
 
         for counter, star_rect in enumerate(self.star_rects):
