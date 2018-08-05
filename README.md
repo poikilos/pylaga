@@ -76,7 +76,7 @@ TypeError: list indices must be integers, not float
 * proper transitions
 
 ### RJ Marsan's CHANGES:
-* Moved the game to an object called 'gamelolz'
+* Moved the game to an object called 'gamelolz' [later renamed to world]
 * Made a game manager
 * Added Keyboard support
 * Changed name (Pylaga sounds cooler anyways)
