@@ -3,7 +3,7 @@ Pylaga-py3 is a simple remake of a classic game with a similar name, with some d
 ![Pylaga screenshot](https://github.com/poikilos/pylaga/raw/master/screenshot.jpg)
 
 ## Authors
-Forked (Python 3 and new graphics, no globalvars) by: poikilos
+Forked (Python 3 and new graphics, particles, no globalvars, unified Entity class) by: poikilos
 Previously forked (pylaga [python 2]) by: RJ Marsan (RJMarsan@gmail.com)
 Original Creator: Derek Mcdonald
 CRYSTAL-Regular.ttf: Felipe Munoz (CC-BY SA 4.0 International)
