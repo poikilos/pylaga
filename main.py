@@ -29,19 +29,42 @@ if not pygame.font:
     print('Warning, fonts disabled')
 
 
-########################################################################
-#
-#
-#    simple class to manage the entire game...it helps with organization
-#
-#
 class App:
+    """App
+    App is a simple class to manage the entire game.
+    """
     def __init__(self, resolution):
         pygame.init()
+        self.settings = {}
+        self.settings['sound_system'] = True
+        self.settings['stage_music'] = True  # TODO: implement this
+        self.settings['music'] = True
+        self.settings['music_vol'] = .2
+        self.settings['sounds'] = True  # TODO: implement this
         # pygame.mixer.init(frequency=44100, size=-16, channels=2,
                           # buffer=4096)
-        pygame.mixer.init(frequency=44100, channels=2)
+        if self.settings['sound_system']:
+            print("initializing sound with volume " +
+                  str(self.settings['music_vol']))
+            pygame.mixer.init(frequency=44100, channels=2)
+            pygame.mixer.music.set_volume(self.settings['music_vol'])
+        else:
+            self.settings['sounds'] = False
+            self.settings['music'] = False
+        if self.settings['music']:
+            pygame.mixer.music.set_endevent(pygame.USEREVENT)
+        else:
+            self.settings['stage_music'] = False
+
+        print("effective settings: " + str(self.settings))
+
+        self.music_name = None
+        self.queued_music_name = None
+        self.prev_offset = 0.0
+        self.prev_song_len = 0.0
+        self.music_loaded = None
         self.clock = pygame.time.Clock()
+        self.music_count = -1
         data_sub_dir = "data"
         ced = os.path.dirname(__file__)  # current executable directory
         self.DATA_PATH = os.path.join(ced, data_sub_dir)
@@ -53,24 +76,35 @@ class App:
         about_string = '''
             PYLAGA
 
-            License: GPL 3.0
-
-            Forked (Python 3 and new graphics, no globalvars)
-             by: poikilos
-
-            Previously forked (pylaga [python 2])
-             by: RJ Marsan (RJMarsan@gmail.com)
+            Code License: GPL 3.0
+            Media License: CC-BY-SA 4.0 International
 
             Original Creator:
-             Derek Mcdonald
+              Derek Mcdonald
 
-            CRYSTAL-Regular.ttf:
-             Felipe Munoz (CC-BY SA 4.0 International)
+                FreeSansBold.ttf:
+                  Copyleft 2002, 2003, 2005, 2008, 2009, 2010
+                  Free Software Foundation ([GPL License]
+                  (https://www.gnu.org/licenses/gpl-3.0.en.html))
 
-            FreeSansBold.ttf:
-             Copyleft 2002, 2003, 2005, 2008, 2009, 2010
-             Free Software Foundation ([GPL License]
-             (https://www.gnu.org/licenses/gpl-3.0.en.html))
+
+            PYLAGA fork [python 2]
+               RJ Marsan (RJMarsan@gmail.com)
+
+
+            PYLAGA [Python 3]
+                new graphics
+                new enemies
+                removed globalvars
+                sound fx [own work]
+                particles
+                  poikilos
+
+                CRYSTAL-Regular.ttf:
+                  Felipe Munoz (CC-BY SA 4.0 International)
+
+                Music
+                  MixMystery
         '''
         help_string = '''
             MOVE: move mouse
@@ -94,27 +128,100 @@ class App:
         # pages_dict['HELP']['scroll_text'] = help_string
         self.menus = Menus(self.world.statcounter, self, logo_image,
                            cursor_image, pages_dict)
-        init_menu_strings = ("PLAY", "ABOUT", "HELP", "EXIT")
+        init_menu_strings = ["PLAY", "ABOUT", "HELP", "EXIT"]
         self.menus.show_dialog(init_menu_strings)
         print("starting world...")
         self.world.start(self.menus)
         tries = 1
         retry_menu_strings = ["RETRY", "ABOUT", "HELP", "EXIT",
                              "Score: %s" %
-                             self.world.statcounter.get_points()
+                             self.world.statcounter.get_v()
         ]
         if self.world.won:
             retry_menu_strings.insert(0, self.world.won_msg)
+        else:
+            retry_menu_strings.insert(0, 'GAME OVER')
+
         while ((not self.menus.get_bool('exit')) and
                (self.menus.show_dialog(retry_menu_strings,
                                        cursor_spin=-1.0))):
             print("starting world (tries: " + str(tries) + ")...")
             self.world.start(self.menus)
+            retry_menu_strings = ["RETRY", "ABOUT", "HELP", "EXIT",
+                                 "Score: %s" %
+                                 self.world.statcounter.get_v()
+            ]
+            if self.world.won:
+                retry_menu_strings.insert(0, self.world.won_msg)
+            else:
+                retry_menu_strings.insert(0, 'GAME OVER')
             tries += 1
         self.world.on_exit()
 
     def get_fps(self):
         return 60
+
+    def queue_music(self, name, count):
+        if self.settings['music']:
+            if name is not None:
+                print("queue_music: " + name)
+                for i in range(count):
+                    pygame.mixer.music.queue(
+                        self.resource_find(name))
+                pygame.mixer.music.play()
+                self.queued_music_name = name
+            else:
+                print("ERROR in queue_music: name is " + str(name))
+            # since queued explicitly, stop check_music:
+            self.music_name = None
+
+    def check_music(self):
+        if self.settings['music']:
+            if self.music_name is not None:
+                if self.music_loaded != self.music_name:
+                    # get_pos does not take into account start time,
+                    # so account for that using self.prev_offset
+                    offset = pygame.mixer.music.get_pos()
+                    tmp = pygame.mixer.Sound(
+                        self.resource_find(self.music_name))
+                    song_len = tmp.get_length()
+                    if offset > self.prev_song_len:
+                        # print("WARNING: offset " + str(offset) +
+                              # " > previous song_len" +
+                              # str(self.prev_song_len))
+                        if self.prev_song_len > 0.0:
+                            offset = math.fmod(offset,
+                                               self.prev_song_len)
+                    if offset > self.prev_offset:
+                        offset += self.prev_offset
+                    else:
+                        offset = offset - self.prev_offset
+                    if offset > song_len:
+                        print("WARNING: offset " + str(offset) +
+                              " > song_len " + str(song_len))
+                    pygame.mixer.music.load(
+                        self.resource_find(self.music_name))
+                    # only seemless if different variation of same loop:
+                    pygame.mixer.music.play(-1, start=offset)
+                    self.music_loaded = self.music_name
+                    # pygame.mixer.music.set_pos(offset)
+                    self.prev_offset = offset
+                    self.prev_song_len = song_len
+            else:
+                if self.music_loaded != None:
+                    self.music_loaded = None
+                    pygame.mixer.music.stop()
+
+    def continue_music(self):
+        if self.settings['music']:
+            if self.music_name is not None:
+                if self.music_loaded != self.music_name:
+                    pygame.mixer.music.load(
+                        self.resource_find(self.music_name))
+                # plays once PLUS repeats if int is specified:
+                print("playing music only once...")
+                pygame.mixer.music.play()
+
 
     # general exception handler
     # (formerly used during imports to avoid exit without warning)
@@ -148,9 +255,9 @@ class App:
             self.DATA_PATH,
             os.path.dirname(os.path.abspath(__file__))
         ]
-        no_pad_is_this_length = 6
+        never_pad_len = 5
         for parent in try_dirs:
-            for min_digits in range(no_pad_is_this_length):
+            for min_digits in range(never_pad_len):
                 for first_i in range(2):
                     name = (name_except_number +
                             self.zero_padded(first_i, min_digits) +
@@ -165,7 +272,6 @@ class App:
                     else:
                         results['tried_paths'].append(path)
         return results
-
 
     def load_seq(self, name_except_number, dot_ext=".png",
                  min_digits=0):
@@ -198,6 +304,25 @@ class App:
                 print("  " + try_path)
         return results
 
+    def resource_find(self, name, repress_error_enable=False,
+                      try_dirs=None, file_type='image'):
+        ret = None
+        if try_dirs is None:
+            try_dirs = [
+                '.',
+                self.DATA_PATH,
+                os.path.dirname(os.path.abspath(__file__))
+            ]
+        for parent in try_dirs:
+            path = os.path.join(parent, name)
+            if os.path.isfile(path):
+                ret = path
+        if ret is None:
+            if not repress_error_enable:
+                print("ERROR in main.py: failed to find resource '" +
+                      name + "'")
+        return ret
+
 
     def load_file(self, name, repress_error_enable=False,
                   try_dirs=None, file_type='image'):
@@ -217,7 +342,7 @@ class App:
                         return pygame.mixer.Sound(path)
         except:
             if not repress_error_enable:
-                print("Failed to load file "+name)
+                print("Failed to load file " + str(name))
         return None
 
 

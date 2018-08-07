@@ -24,12 +24,35 @@ class Stage:
         self.playermanager = playermanager
 
         self.stages = [
-            {'x_e_count':4, 'y_e_count':1, 'e':'eship', 'e_h':1},
-            {'x_e_count':5, 'y_e_count':2, 'e':'eship', 'e_h':1},
-            {'x_e_count':5, 'y_e_count':3, 'e':'eship', 'e_h':1},
-            {'x_e_count':6, 'y_e_count':1, 'e':'cship', 'e_h':4},
-            {'x_e_count':1, 'y_e_count':1, 'e':'bship', 'e_h':30}
+            {
+                'x_e_count':4, 'y_e_count':1, 'e':'eship', 'e_h':1,
+                'music':'stage1.ogg'
+            },
+            {
+                'x_e_count':5, 'y_e_count':2, 'e':'eship', 'e_h':1,
+                'music':'stage2.ogg'
+            },
+            {
+                'x_e_count':5, 'y_e_count':3, 'e':'eship', 'e_h':1,
+                'music':'stage3.ogg'
+            },
+            {
+                'x_e_count':6, 'y_e_count':1, 'e':'cship', 'e_h':4,
+                'music':'stage4.ogg'
+            },
+            {
+                'x_e_count':1, 'y_e_count':1, 'e':'bship', 'e_h':30,
+                'music':'stage5.ogg'
+            }
         ]
+        self.hax = False
+        if self.hax:
+            self.stages = [
+                {
+                    'x_e_count':1, 'y_e_count':1, 'e':'bship', 'e_h':1,
+                    'music':'stage5.ogg'
+                }
+            ]
         self.current_i = 0
 
     def add_stage(self, x, y):

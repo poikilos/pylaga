@@ -1,0 +1,13 @@
+License: CC-BY-SA 4.0 International
+
+
+*.mmpz
+*.mmpx.bak
+MixMystery
+
+*ship.xcf
+previous layers may be original graphics of game by
+Derek Mcdonald
+
+other files
+poikilos

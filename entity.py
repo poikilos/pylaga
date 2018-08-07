@@ -64,14 +64,17 @@ class Entity(pygame.sprite.Sprite):
     # swarm.world_rect.left
     #   # # yeah what the first one said.^^
 
-    def __init__(self, what, images, speed, angle, spritegroup, health,
-                 explosion_images, particles, offscreen_remove=False,
-                 ai_enable=False, anim_done_remove=False,
-                 value=1, rotate_surf_enable=True,
-                 temper_sound=None, ex_sound=None):
+    def __init__(self, app, what, images, speed, angle, spritegroup,
+                 health, explosion_images, particles,
+                 offscreen_remove=False, ai_enable=False,
+                 anim_done_remove=False, value=1,
+                 rotate_surf_enable=True, temper_sound=None,
+                 ex_sound=None):
         """Constructor
 
         Sequential arguments:
+        app -- the app passed must at least have the following members:
+               self.settings['sounds'] boolean
         images -- surface list: frame 0 normal, others are temper anim
         speed -- pixels per frame
         angle -- cartesian angle (will be flipped to account for screen)
@@ -83,6 +86,7 @@ class Entity(pygame.sprite.Sprite):
         """
         super(Entity, self).__init__()  # initialize sprite
         # self.dirty = 2  # 2 is always draw; only for DirtySprite
+        self.shoot_sound = None
         self.anim_done_remove = anim_done_remove
         self.parent_what = ''
         self.vector = (0, 0)
@@ -96,6 +100,7 @@ class Entity(pygame.sprite.Sprite):
         self.generate_ex = True
         self.desired_vel_x = 0
         self.thrust = 0.0
+        self.app = app
         self.what = what
         self.images = images
         self.speed = speed
@@ -139,7 +144,7 @@ class Entity(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
 
-    def get_value(self):
+    def get_v(self):
         if self.value <= 0:
             print("WARNING: value " + str(self.value) + " for " +
                   self.what + " (maybe you already did take_value)")
@@ -226,7 +231,10 @@ class Entity(pygame.sprite.Sprite):
                 if self.play_temper_sound_enable:
                     self.play_temper_sound_enable = False
                     if self.temper_sound is not None:
-                        pygame.mixer.Sound.play(self.temper_sound)
+                        if self.app.settings['sounds']:
+                            print("playing temper sound " +
+                                  str(self.temper_sound))
+                            pygame.mixer.Sound.play(self.temper_sound)
             if temper_frame >= len(self.images):
                 if self.anim_done_remove:
                     self.spritegroup.remove(self)
@@ -289,7 +297,11 @@ class Entity(pygame.sprite.Sprite):
     def shoot(self, image, bullet_spritegroup, bullet_speed=10,
               bullet_health=1):
         # not used by player
-        new_bullet = Entity(self.what+'.bullet', [image],
+        if self.shoot_sound is not None:
+            if self.app.settings['sounds']:
+                pygame.mixer.Sound.play(self.shoot_sound)
+        new_bullet = Entity(self.app,
+                            self.what+'.bullet', [image],
                             bullet_speed, self.angle,
                             bullet_spritegroup, bullet_health,
                             None, self.particles,
@@ -319,7 +331,7 @@ class Entity(pygame.sprite.Sprite):
     # def shoot_from(self, image, bullet_spritegroup, x, y, angle,
                    # bullet_health=1):
         # # not used by enemy
-        # new_bullet = Entity(self.what+'.bullet', [image],
+        # new_bullet = Entity(self.app, self.what+'.bullet', [image],
                             # init_enemy_speed, self.angle,
                             # bullet_spritegroup, bullet_health,
                             # None, self.particles,
@@ -370,7 +382,8 @@ class Entity(pygame.sprite.Sprite):
                 self.generate_ex = False
                 if self.particles is not None:
                     exp_what = self.what + '.explosion'
-                    new_exp = Entity(exp_what, self.explosion_images,
+                    new_exp = Entity(self.app, exp_what,
+                                     self.explosion_images,
                                      0, self.angle,
                                      self.particles,
                                      1,

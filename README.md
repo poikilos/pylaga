@@ -3,11 +3,18 @@ Pylaga-py3 is a simple remake of a classic game with a similar name, with some d
 ![Pylaga screenshot](https://github.com/poikilos/pylaga/raw/master/screenshot.jpg)
 
 ## Authors
-* Forked (Python 3 and new graphics, particles, no globalvars, unified Entity class) by: poikilos
+* Music by MixMystery
+* Forked (Python 3 and new graphics, particles, no globalvars, unified Entity class, sound [own work]) by: poikilos
 * Previously forked (pylaga [python 2]) by: RJ Marsan (RJMarsan@gmail.com)
 * Original Creator: Derek Mcdonald
 * CRYSTAL-Regular.ttf: Felipe Munoz (CC-BY SA 4.0 International)
 * FreeSansBold.ttf: Copyleft 2002, 2003, 2005, 2008, 2009, 2010 Free Software Foundation ([GPL License](https://www.gnu.org/licenses/gpl-3.0.en.html))
+
+## License
+### Code
+"LICENSE" file applies to code.
+### Media
+"CC-BY-SA 4.0 International.txt" file applies to media.
 
 ## How to install:
 
@@ -22,12 +29,16 @@ python3 main.py
 * `python3 main.py`
 
 ### Windows:
-* Install python 3 (custom install, then for "add python to system path" choose "run from hard drive")
+* Install python 3 (custom install, then in the list of options to install,
+  look for "add Python to system PATH" then click on that drop-down box and choose "run from hard drive")
 * Install pygame for python 3 (64-bit, unless you installed Python3 32-bit)
 * doubleclick main.py
 
 (this list of changes are only in poikilos fork)
 ## Changes
+### (2018-08-05)
+* added music and one sound
+* created unified widget class for adding whatever you want wherever you want to the hud, and now Hud is a subclass of sprite.Group (widget class is Blip, and replaces StatCounter and HealthBar)
 ### (2018-08-05)
 * combine Enemy, PlayerUnit, Bullet, EnemyBullet into one class
 * add particles

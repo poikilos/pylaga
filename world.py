@@ -22,7 +22,7 @@ from pygame.locals import*
 from background import BackgroundManager
 from entity import Entity, Swarm
 from stage import Stage
-from hud import StatCounter, Hud
+from hud import Blip, Hud
 from menu import Menu
 from menus import Menus
 #    import ecollision
@@ -44,6 +44,7 @@ class World:
         # tock started out random, but now is an important variable.
         # It is a frames count, used for periodic updates on certain
         # frames.
+        self.p_max_health = 5
         self.won = False
         self.won_msg = "WINNER!"
         self.particle_ban = False
@@ -56,6 +57,14 @@ class World:
         self.temp_rect = None
         self.app = app
         self.screen = screen
+        self.app.music_name = "intro.ogg"
+        # self.app.continue_music()
+        if self.app.settings['music']:
+            # self.app.music_loaded = self.app.music_name
+            # pygame.mixer.music.load(self.app.resource_find(
+            #     self.music_name))
+            # pygame.mixer.music.play()  # plays once PLUS repeats param
+            pass
         left_border = 50
         right_border = 50
         w, h = screen.get_size()
@@ -70,10 +79,10 @@ class World:
         # It makes sense in here *points to brain*
         self.p_spritegroup = Swarm(self.world_rect)
         self.particles = Swarm(self.world_rect)
-        self.hud_spritegroup = pygame.sprite.Group()
 
         self.explosion_images = self.app.load_seq('ex-medium')
         self.shield_hit_images = self.app.load_seq('shield_hit-tiny')
+        self.damage_images = self.app.load_seq('ex-tiny')
 
         # Load player sprite as image list.
         self.p_unit_images = self.app.load_seq('pship')
@@ -85,9 +94,23 @@ class World:
 
         # Load enemy ship image.
         self.e_ship_image = self.load_file('eship.png')
-        self.e_ex_sound = self.app.load_file('eship-ex.wav',
-                                             file_type='sound')
-
+        if self.app.settings['sounds']:
+            self.p_shoot_sound = self.app.load_file('p-weapon0.wav',
+                                                    file_type='sound')
+            self.p_shoot_sound.set_volume(.3)
+            self.e_ex_sound = self.app.load_file('e-ex.wav',
+                                                 file_type='sound')
+            self.p_ex_sound = self.app.load_file('p-ex.wav',
+                                                 file_type='sound')
+            self.e_damage_sound = self.app.load_file('e-damage.wav',
+                                                     file_type='sound')
+            self.e_shield_sound = self.app.load_file('e-shield.wav',
+                                                     file_type='sound')
+            self.p_shield_sound = self.app.load_file('p-shield.wav',
+                                                     file_type='sound')
+            self.p_damage_sound = self.app.load_file('p-damage.wav',
+                                                     file_type='sound')
+            print("loaded sounds...")
         self.menus = None
         self.tock = 0
         self.lagcount = 0
@@ -98,25 +121,21 @@ class World:
                            shoot_odds=self.stage_e_bullet_odds)
         self.stage = Stage(self.swarm, self.p_spritegroup)
 
-        self.p_shot_image = self.load_file('laser.png')
-        self.e_shot_image = self.load_file('elaser.png')
+        self.p_shot_image = self.load_file('p-laser.png')
+        self.e_shot_image = self.load_file('e-laser.png')
 
         self.p_bullet_spritegroup = Swarm(self.world_rect)
         self.e_bullet_spritegroup = Swarm(self.world_rect)
         # self.bullet_width = 10
-        sc_rect = pygame.Rect(0, 5, 10, 10)
-        self.statcounter = StatCounter(sc_rect)
-        self.hud_spritegroup.add(self.statcounter)
-
-        max_health = 100
-
-        self.hud_rect = pygame.Rect(10,
-                                    self.statcounter.rect.bottom + 10,
-                                    5, 150)  # font height is included
-        self.hud = Hud(self.hud_rect, (64, 64, 64), (255, 255, 255),
-                       100)
-        self.hud_spritegroup.add(self.hud)
-        self.hud_spritegroup.add(self.hud.healthbar)
+        self.hud_rect = pygame.Rect(0, 0, 5, 150)
+        self.hud = Hud()
+        self.hud.generate_blip('score', 100,
+                               fg_color=(255,243,207),
+                               text_color=(255,243,207))
+        self.hud.generate_blip('health', self.p_max_health,
+                               fg_color=(0,255,42),
+                               text_color=(0,255,42))
+        self.statcounter = self.hud.get_blip('score')
 
     def load_file(self, name):
         return self.app.load_file(name)
@@ -134,8 +153,12 @@ class World:
         self.bend_rate = 0.02
         self.leftkeydown = 0
         self.rightkeydown = 0
-        self.hud.healthbar.set_health(self.hud.max_health)
-        self.statcounter.set_points(0)
+        if self.p_unit is not None:
+            self.hud.set_blip_value('health', self.p_unit.health)
+        else:
+            print("WARNING: clear_vars failed to set bar since no" +
+                  " player unit exists")
+        self.statcounter.set_v(0)
         self.stage.set_stage_number(-1)  # hax
         self.stage_e_bullet_odds = 100
         self.swarm.empty()
@@ -158,20 +181,24 @@ class World:
         xmin = self.world_rect.left
         xmax = self.world_rect.right
         ymin = self.world_rect.top
+        stage_data = self.stage.get_data()
+        self.e_ship_image = self.app.load_file(stage_data['e']+".png")
         enemy_width, enemy_height = self.e_ship_image.get_size()
         enemy_spacing_x = 15
         enemy_spacing_y = 10
         init_enemy_speed = 3
         angle = -90  # cartesian
 
-        stage_data = self.stage.get_data()
+        self.app.music_name = stage_data['music']
+        # if self.app.music_name == 'intro.ogg':
+            # self.app.continue_music()  # force song change
         e_max_health = stage_data['e_h']
-        self.e_ship_image = self.app.load_file(stage_data['e']+".png")
         for enemycol in range(stage_data['x_e_count']):
             # Now for the rows
             for enemyrow in range(stage_data['y_e_count']):
                 # Make a new enemy object:
-                new_enemy = Entity('eship', [self.e_ship_image],
+                new_enemy = Entity(self.app,
+                                  'eship', [self.e_ship_image],
                                   init_enemy_speed, angle,
                                   self.swarm, e_max_health,
                                   self.explosion_images, self.particles,
@@ -212,34 +239,42 @@ class World:
                                            0, 0)
         for sprite, bullets in e_hit.items():
             # print("removed " + str(bullet)
+            was_alive = sprite.get_is_alive()
+            prev_health = sprite.health
             if sprite.get_is_alive():
+                sprite.set_hit(1)
+            damage = prev_health - sprite.health
+            poof = self.shield_hit_images
+            temper_sound = self.e_shield_sound
+            if damage > 0:
+                poof = self.damage_images
+                temper_sound = self.e_damage_sound
+            if was_alive:
                 for bullet in bullets:
                     point = pygame.sprite.collide_mask(sprite,
                                                        bullet)
                     if ((point is not None) and
-                            (not self.particle_ban) and
-                            (sprite.get_is_alive())):
-                        particle = Entity('particle',
-                                          self.shield_hit_images,
+                            (not self.particle_ban)):
+                        particle = Entity(self.app, 'particle',
+                                          poof,
                                           part_speed,
                                           part_angle, self.particles,
                                           part_health,
                                           None,
                                           None,
-                                          anim_done_remove=True)
+                                          anim_done_remove=True,
+                                          temper_sound=temper_sound)
                         particle.temper = 1  # start particle death
                         x1, y1 = sprite.get_pos()  # top left
                         x = x1 + point[0] - particle.rect.width / 2
                         y = y1 + point[1] - particle.rect.height / 2
                         particle.set_xy(x, y)
                         self.particles.add(particle)
-                if self.p_unit.get_is_alive():
-                    sprite.set_hit(1)
                 # if sprite.state < 0:
                     # sprite.set_state(0)
                 points = sprite.take_value()  # only once & if health 0
                 if points > 0:
-                    self.statcounter.add_points(points)
+                    self.statcounter.add_value(points)
             self.p_bullet_spritegroup.remove(bullets)
 
 
@@ -248,20 +283,31 @@ class World:
                                            self.e_bullet_spritegroup,
                                            0, 0)
         for sprite, bullets in p_hit.items():
+            was_alive = sprite.get_is_alive()
+            prev_health = sprite.health
+            if sprite.get_is_alive():
+                sprite.set_hit(1)
+            damage = prev_health - sprite.health
+            poof = self.shield_hit_images
+            temper_sound = self.e_shield_sound
+            if damage > 0:
+                poof = self.damage_images
+                temper_sound = self.e_damage_sound
             for bullet in bullets:
                 # New in pygame 1.8.0:
                 point = pygame.sprite.collide_mask(sprite, bullet)
                 if not sprite.get_is_alive():
                     continue
                 if (point is not None) and (not self.particle_ban):
-                    particle = Entity('particle',
-                                      self.shield_hit_images,
+                    particle = Entity(self.app, 'particle',
+                                      poof,
                                       part_speed,
                                       part_angle, self.particles,
                                       part_health,
                                       None,
                                       None,
-                                      anim_done_remove=True)
+                                      anim_done_remove=True,
+                                      temper_sound=temper_sound)
                     particle.temper = 1  # start particle death
                     x1, y1 = sprite.get_pos()  # top left
                     x = x1 + point[0] - particle.rect.width / 2
@@ -270,18 +316,25 @@ class World:
                     self.particles.add(particle)
             if sprite.get_is_alive():  # self.p_unit
                 sprite.set_hit(1)
-                self.hud.healthbar.set_health(self.p_unit.health)
+                self.hud.set_blip_value('health', self.p_unit.health)
 
         # if pygame.sprite.spritecollideany(self.p_unit,
                                           # self.e_bullet_spritegroup):
             # self.p_unit.set_hit(1)
-            # self.hud.healthbar.set_health(self.p_unit.health)
+            # self.hud.set_blip_value('health', self.p_unit.health)
 
     # if there are no enemys left, go to the next stage
     def check_done(self):
         if not self.swarm:
             if self.stage.is_last_stage():
-                self.won = True  # TODO: make ending screen
+                if not self.won:
+                    self.won = True  # TODO: make ending screen
+                    # self.app.music_name = 'victory.ogg'
+                    # if self.app.music_name == 'intro.ogg':
+                        # self.app.continue_music()  # force song change
+                    self.app.music_name = None  # stop repeating
+                    self.app.check_music() # apply None to loop
+                    self.app.queue_music('victory.ogg', 1)
             if not self.won:
                 self.stage.next_stage()
                 if self.stage_e_bullet_odds > 15:
@@ -313,7 +366,7 @@ class World:
 
     # major hack just to get this thing playable..... sorry
     def again(self):
-        if self.hud.healthbar.get_health() <= 0:
+        if self.hud.get_blip_value('health') <= 0:
             self.particle_ban = True
         if self.p_unit.get_is_decayed():
             self.particle_ban = True
@@ -352,8 +405,8 @@ class World:
 
     def draw_hud(self):
         if self.tock % 5 == 0:
-            self.hud_spritegroup.update()
-        self.hud_spritegroup.draw(self.screen)
+            self.hud.update()
+        self.hud.draw(self.screen)
 
     # Goes through all the objects and makes each of them move as
     # necessary
@@ -434,6 +487,7 @@ class World:
         smooth_scroll_var1 = 10
         smooth_scroll_var2 = 2
         pygame.event.pump()  # redraw Window so OS knows not frozen
+        self.app.check_music()
         pause_menu_strings = ["RESUME", "ABOUT", "HELP", "EXIT"]
         if self.won:
             pause_menu_strings.insert(0, self.won_msg)
@@ -469,10 +523,10 @@ class World:
                     # we've passed all sanity checks so just move it
                     self.p_unit.set_xy(tempx, prev_pos[1])
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.pshoot()
 
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     self.menus.show_dialog(pause_menu_strings)
                 if event.key == pygame.K_p:
@@ -487,11 +541,22 @@ class World:
                 if event.key == pygame.K_SPACE:
                     self.pshoot()
 
-            if event.type == pygame.KEYUP:
+            elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT:
                     self.leftkeydown = 0
                 if event.key == pygame.K_RIGHT:
                     self.rightkeydown = 0
+            elif event.type == pygame.USEREVENT:
+                if event.code == pygame.USEREVENT_DROPFILE:
+                    print("Tried to open file on MacOS (this should" +
+                          " never happen:")
+                    print("  " + str(event))
+                else:  # should be event.code 0
+                    self.app.continue_music()
+                    print("music queue ended in game:")
+                    if event.code != 0:
+                        print("unknown USEREVENT event.code: " +
+                              str(event.code))
 
         if self.leftkeydown:
             self.p_unit.move_one(-1, self.world_rect)
@@ -508,11 +573,13 @@ class World:
         self.wait_stop_count = -1  # -1 means do not count down to menu
         self.menus = menus
         p_speed = 10
-        p_max_health = 5
-        self.p_unit = Entity('pship', self.p_unit_images, p_speed, 90.0,
-                             self.p_spritegroup, p_max_health,
+        self.p_unit = Entity(self.app, 'pship', self.p_unit_images,
+                             p_speed, 90.0,
+                             self.p_spritegroup, self.p_max_health,
                              self.explosion_images,
-                             self.particles)
+                             self.particles,
+                             ex_sound = self.p_ex_sound)
+        self.p_unit.shoot_sound = self.p_shoot_sound
         print("Clearing vars...")
         self.clear_vars()  # does reset player unit (p_unit) position
         self.p_spritegroup.add(self.p_unit)

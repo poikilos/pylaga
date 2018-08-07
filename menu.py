@@ -105,7 +105,8 @@ class Menu:
         )
         self.selectedimg = pygame.Surface(self.selectedrect.size,
                                           pygame.SRCALPHA, 32)
-        self.selectedimg.fill((80,80,32,0))
+        self.oops_color = ((255, 0, 255))
+        # self.selectedimg.fill(self.oops_color)  # (80,80,32,0))
         # self.final_cursor = self.cursor_image
         self.final_cursor = pygame.transform.rotate(self.cursor_image,
                                                self.cursor_angle)
@@ -146,7 +147,7 @@ class Menu:
     # unless they know what they're doing
     def draw_cursor(self, screen):
         # self.draw_scroll(screen, delay=0)
-        self.selectedimg.fill(self.bg_color)
+        # self.selectedimg.fill(self.oops_color)  # erase bg, not good
         self.update_selector_size()
         cursor_rect = pygame.Rect(0, self.select_i*self.offset_y,
                                   self.shipselectorsize[0],

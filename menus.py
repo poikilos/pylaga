@@ -130,11 +130,12 @@ class Menus:
 
     def draw_dialog(self, events, menu):
         selection = None
+        self.app.check_music()
         pygame.event.pump()  # redraw Window so OS knows not frozen
         for event in events:
             if event.type == pygame.QUIT:
                 self.set_bool('exit', True)
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     selection = "BACK"
                 if event.key == pygame.K_ESCAPE:
@@ -145,11 +146,23 @@ class Menus:
                     menu.change_selection_down(self.screen)
                 if event.key == pygame.K_RETURN:
                     selection = menu.get_selection()
-            if event.type == pygame.MOUSEMOTION:
+            elif event.type == pygame.MOUSEMOTION:
                 menu.change_selection_pos(event.pos, self.screen)
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 menu.change_selection_pos(event.pos, self.screen)
                 selection = menu.get_selection()
+            elif event.type == pygame.USEREVENT:
+                if event.code == pygame.USEREVENT_DROPFILE:
+                    print("Tried to open file on MacOS (this should" +
+                          " never happen:")
+                    print("  " + str(event))
+                else:  # should be event.code 0
+                    self.app.continue_music()
+                    print("music queue ended in menu:")
+                    if event.code != 0:
+                        print("unknown USEREVENT event.code: " +
+                              str(event.code))
+
         return selection
     # endregion the menu functions
 
