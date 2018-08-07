@@ -5,7 +5,7 @@ Pylaga-py3 is a simple remake of a classic game with a similar name, with some d
 ## Authors
 * Music by MixMystery
 * Forked (Python 3 and new graphics, particles, no globalvars, unified Entity class, sound [own work]) by: poikilos
-* Previously forked (pylaga [python 2]) by: RJ Marsan (RJMarsan@gmail.com)
+* Previously forked (pylaga [python 2]) by: RJ Marsan (gmail RJMarsan)
 * Original Creator: Derek Mcdonald
 * CRYSTAL-Regular.ttf: Felipe Munoz (CC-BY SA 4.0 International)
 * FreeSansBold.ttf: Copyleft 2002, 2003, 2005, 2008, 2009, 2010 Free Software Foundation ([GPL License](https://www.gnu.org/licenses/gpl-3.0.en.html))

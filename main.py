@@ -89,7 +89,7 @@ class App:
 
 
             PYLAGA fork [python 2]
-               RJ Marsan (RJMarsan@gmail.com)
+               RJ Marsan (gmail RJMarsan)
 
 
             PYLAGA [Python 3]
