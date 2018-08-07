@@ -110,7 +110,7 @@ class App:
             MOVE: move mouse
             FIRE: click/tap
             MENU: Escape ("Esc") key
-              MENU controls: click/tap a choice, or use arrows and enter key
+              MENU controls: click/tap choice, or use arrows & enter key
                                           (Esc or q key to resume/retry)
             EXIT: In the menu, click EXIT
                       (or select EXIT with arrows then press Enter key)

@@ -19,7 +19,7 @@ import random
 class BackgroundManager(pygame.sprite.Sprite):
 
     star_rects = []
-    prev_star_rects = []
+    prev_rects = []
 
     def __init__(self, bg_rect):
         self.bg_rect = bg_rect
@@ -32,7 +32,7 @@ class BackgroundManager(pygame.sprite.Sprite):
             self.add_star()
 
     def update(self):
-        # self.prev_star_rects = [
+        # self.prev_rects = [
         #     pygame.Rect(st) for st in self.star_rects \
         #     if st.top <= self.bg_rect.bottom
         # ]
@@ -41,13 +41,13 @@ class BackgroundManager(pygame.sprite.Sprite):
         for counter, star_rect in enumerate(self.star_rects):
             if star_rect.top > self.bg_rect.bottom:
                 del self.star_rects[counter]
-                del self.prev_star_rects[counter]
+                del self.prev_rects[counter]
                 self.add_star()
             else:
-                self.prev_star_rects[counter].topleft = star_rect.topleft
+                self.prev_rects[counter].topleft = star_rect.topleft
                 star_rect.top += star_rect.speed
                 # print(str(star_rect) +
-                #     # str(self.prev_star_rects[counter]))
+                #     # str(self.prev_rects[counter]))
 
     def draw(self, screen):
         # TODO: eliminate this
@@ -56,9 +56,9 @@ class BackgroundManager(pygame.sprite.Sprite):
         return self.star_rects
 
     # def clear(self, screen):
-        # for star_rect in self.prev_star_rects:
+        # for star_rect in self.prev_rects:
             # screen.fill(self.bg.bg_color, star_rect)
-        # return self.prev_star_rects
+        # return self.prev_rects
 
     def add_star(self):
         size = random.randint(3, 6)
@@ -66,7 +66,7 @@ class BackgroundManager(pygame.sprite.Sprite):
         rect = Star(x, 0, size, size)
         rect.set_speed(random.randint(2, self.BG_Speed))
         self.star_rects.append(rect)
-        self.prev_star_rects.append(pygame.Rect(rect))
+        self.prev_rects.append(pygame.Rect(rect))
 
 
 class Star(pygame.Rect):

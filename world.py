@@ -77,7 +77,7 @@ class World:
         # spritegroup & then all one needs to do is go through these &
         # call functions & stuff.
         # It makes sense in here *points to brain*
-        self.p_spritegroup = Swarm(self.world_rect)
+        self.p_swarm = Swarm(self.world_rect)
         self.particles = Swarm(self.world_rect)
 
         self.explosion_images = self.app.load_seq('ex-medium')
@@ -119,13 +119,13 @@ class World:
         # self.enemylist = []  # list of dirty rects
         self.swarm = Swarm(self.world_rect,
                            shoot_odds=self.stage_e_bullet_odds)
-        self.stage = Stage(self.swarm, self.p_spritegroup)
+        self.stage = Stage(self.swarm, self.p_swarm)
 
         self.p_shot_image = self.load_file('p-laser.png')
         self.e_shot_image = self.load_file('e-laser.png')
 
-        self.p_bullet_spritegroup = Swarm(self.world_rect)
-        self.e_bullet_spritegroup = Swarm(self.world_rect)
+        self.p_bullet_swarm = Swarm(self.world_rect)
+        self.e_bullet_swarm = Swarm(self.world_rect)
         # self.bullet_width = 10
         self.hud_rect = pygame.Rect(0, 0, 5, 150)
         self.hud = Hud()
@@ -162,14 +162,14 @@ class World:
         self.stage.set_stage_number(-1)  # hax
         self.stage_e_bullet_odds = 100
         self.swarm.empty()
-        self.p_bullet_spritegroup.empty()
-        self.p_spritegroup.empty()
+        self.p_bullet_swarm.empty()
+        self.p_swarm.empty()
         self.particles.empty()
-        self.e_bullet_spritegroup.empty()
+        self.e_bullet_swarm.empty()
 
     # Define function to draw player ship on X, Y plane
     def draw_player_units(self):
-        self.p_spritegroup.draw(self.screen)
+        self.p_swarm.draw(self.screen)
 
     # Define function to move the enemy ship
     def emove(self):
@@ -235,7 +235,7 @@ class World:
         part_angle = -90
         part_health = 1
         e_hit = pygame.sprite.groupcollide(self.swarm,
-                                           self.p_bullet_spritegroup,
+                                           self.p_bullet_swarm,
                                            0, 0)
         for sprite, bullets in e_hit.items():
             # print("removed " + str(bullet)
@@ -275,12 +275,12 @@ class World:
                 points = sprite.take_value()  # only once & if health 0
                 if points > 0:
                     self.statcounter.add_value(points)
-            self.p_bullet_spritegroup.remove(bullets)
+            self.p_bullet_swarm.remove(bullets)
 
 
 
-        p_hit = pygame.sprite.groupcollide(self.p_spritegroup,
-                                           self.e_bullet_spritegroup,
+        p_hit = pygame.sprite.groupcollide(self.p_swarm,
+                                           self.e_bullet_swarm,
                                            0, 0)
         for sprite, bullets in p_hit.items():
             was_alive = sprite.get_is_alive()
@@ -319,7 +319,7 @@ class World:
                 self.hud.set_blip_value('health', self.p_unit.health)
 
         # if pygame.sprite.spritecollideany(self.p_unit,
-                                          # self.e_bullet_spritegroup):
+                                          # self.e_bullet_swarm):
             # self.p_unit.set_hit(1)
             # self.hud.set_blip_value('health', self.p_unit.health)
 
@@ -394,14 +394,14 @@ class World:
         #      self.p_shot_image.rect.height * .75
         if self.p_unit.get_is_alive():
             self.p_unit.shoot(self.p_shot_image,
-                              self.p_bullet_spritegroup)
+                              self.p_bullet_swarm)
             # self.p_unit.shoot_from(self.p_shot_image,
-            #                        self.p_bullet_spritegroup,
+            #                        self.p_bullet_swarm,
             #                        sx, sy, self.p_unit.angle)
 
     def draw_bullets(self):
-        self.p_bullet_spritegroup.draw(self.screen)
-        self.e_bullet_spritegroup.draw(self.screen)
+        self.p_bullet_swarm.draw(self.screen)
+        self.e_bullet_swarm.draw(self.screen)
 
     def draw_hud(self):
         if self.tock % 5 == 0:
@@ -417,7 +417,8 @@ class World:
             self.bend_rate -= .02
         else:
             self.bend_rate += .02
-        if (self.bend_y > self.p_start_y + bend_max) or (self.bend_y < self.p_start_y):
+        if ((self.bend_y > self.p_start_y + bend_max) or
+            (self.bend_y < self.p_start_y)):
             if self.bend_rate < 0.0:
                 self.bend_rate = .02
                 self.bend_y = float(self.p_start_y)
@@ -426,9 +427,9 @@ class World:
                 self.bend_y = float(self.p_start_y) + bend_max
         self.p_unit.set_xy(self.p_unit.get_pos()[0],
                            int(self.bend_y+.5))
-        self.p_bullet_spritegroup.update()
+        self.p_bullet_swarm.update()
         self.swarm.update()
-        self.e_bullet_spritegroup.update()
+        self.e_bullet_swarm.update()
 
     ######################
     # Here are a bunch of metafunctions.
@@ -441,7 +442,7 @@ class World:
         self.check_rows()
         self.bg.update()
         if self.p_unit.get_is_alive():
-            self.swarm.shoot(self.e_shot_image, self.e_bullet_spritegroup)
+            self.swarm.shoot(self.e_shot_image, self.e_bullet_swarm)
         self.p_unit.update()
         for particle in self.particles:
             particle.update()
@@ -475,9 +476,9 @@ class World:
         print("The Enemy SpriteGroup size is:" +
               str(len(self.swarm.sprites())))
         print("The Player Bullet Array size is:" +
-              str(len(self.p_bullet_spritegroup.sprites())))
+              str(len(self.p_bullet_swarm.sprites())))
         print("The Enemy Bullet Array size is:" +
-              str(len(self.e_bullet_spritegroup.sprites())))
+              str(len(self.e_bullet_swarm.sprites())))
 
     # does lots and lots of stuff, it really needs to be cleaned up
     def process_events(self, events):
@@ -575,14 +576,14 @@ class World:
         p_speed = 10
         self.p_unit = Entity(self.app, 'pship', self.p_unit_images,
                              p_speed, 90.0,
-                             self.p_spritegroup, self.p_max_health,
+                             self.p_swarm, self.p_max_health,
                              self.explosion_images,
                              self.particles,
                              ex_sound = self.p_ex_sound)
         self.p_unit.shoot_sound = self.p_shoot_sound
         print("Clearing vars...")
         self.clear_vars()  # does reset player unit (p_unit) position
-        self.p_spritegroup.add(self.p_unit)
+        self.p_swarm.add(self.p_unit)
         self.p_unit.set_xy(self.p_start_x, self.p_start_y)
         print("Starting main event loop...")
         self.loop()

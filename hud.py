@@ -19,8 +19,8 @@ import random
 class Blip(pygame.sprite.Sprite):
     """Widget for the Hud
 
-    Blip stores values and can have a bar, value, or caption enabled, or
-    theoretically have none enabled in which case the blip would be
+    Blip stores values and can have a bar, value, or caption enabled,
+    or theoretically have none enabled in which case the blip would be
     invisible but could still serve as a value to be accessed
     such as using a Hud's get_blip_value method.
     """
@@ -172,7 +172,8 @@ class Blip(pygame.sprite.Sprite):
                 self.value_rect.height = new_v_rect.height
                 # if self.get_caption_enable():
                     # NOTE: coords for self.image, not screen:
-                    # self.value_rect.move_ip(0, self.caption_rect.height)
+                    # self.value_rect.move_ip(0,
+                    #                         self.caption_rect.height)
                 pygame.Surface.blit(self.image, self.value_img,
                                     self.value_rect)
             self.update_bar()

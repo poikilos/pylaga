@@ -34,12 +34,12 @@ class Swarm(pygame.sprite.Group):
         self.transition_time = 150 / self.transition_speed
         self.current_transition = 0
 
-    def shoot(self, image, bullet_spritegroup):
+    def shoot(self, image, bullet_swarm):
         if self.shoot_odds is not None:
             self.tock = random.randint(0, self.shoot_odds)
             if self.tock < len(self):
                 self.sprites()[self.tock].shoot(image,
-                                                bullet_spritegroup)
+                                                bullet_swarm)
 
     def update(self):  # only call this for enemy swarms
         # TODO: check ai_enabled
@@ -294,7 +294,7 @@ class Entity(pygame.sprite.Sprite):
             ret = 's'
         return ret
 
-    def shoot(self, image, bullet_spritegroup, bullet_speed=10,
+    def shoot(self, image, bullet_swarm, bullet_speed=10,
               bullet_health=1):
         # not used by player
         if self.shoot_sound is not None:
@@ -303,7 +303,7 @@ class Entity(pygame.sprite.Sprite):
         new_bullet = Entity(self.app,
                             self.what+'.bullet', [image],
                             bullet_speed, self.angle,
-                            bullet_spritegroup, bullet_health,
+                            bullet_swarm, bullet_health,
                             None, self.particles,
                             offscreen_remove=True)
         x = None
@@ -326,19 +326,19 @@ class Entity(pygame.sprite.Sprite):
 
         new_bullet.set_xy(x, y)
         new_bullet.set_desired_thrust(1.0)
-        bullet_spritegroup.add(new_bullet)
+        bullet_swarm.add(new_bullet)
 
-    # def shoot_from(self, image, bullet_spritegroup, x, y, angle,
+    # def shoot_from(self, image, bullet_swarm, x, y, angle,
                    # bullet_health=1):
         # # not used by enemy
         # new_bullet = Entity(self.app, self.what+'.bullet', [image],
                             # init_enemy_speed, self.angle,
-                            # bullet_spritegroup, bullet_health,
+                            # bullet_swarm, bullet_health,
                             # None, self.particles,
                             # offscreen_remove=True)
         # new_bullet.set_xy(x, y)
         # new_bullet.set_desired_thrust(1.0)
-        # bullet_spritegroup.add(new_bullet)
+        # bullet_swarm.add(new_bullet)
 
     def set_desired_thrust(self, thrust):
         self.thrust = thrust
