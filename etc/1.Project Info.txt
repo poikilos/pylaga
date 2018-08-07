@@ -5,14 +5,14 @@
 Pylaga (Complete Overhaul)
 
 ## Tags
-vertical scrolling shooter space ship shooting Galaga Galaxian Pylaxian
+vertical scrolling shooter space ship shooting Galaga Galaxian Pylaxian GPL python pygame retro arcade 2d
 
 ## Summary
-A Pygame "classic" overhauled with particles, particles, explosions, sounds, music, code improvements, and Python 3
+A Pylaga overhaul with particles, explosions, sounds, music, code improvements, and Python 3 (the original Pylaga is inspired by Galaga but is more like Galaxian)
 
 ## Description
-This game is actually more like Galaxian than Galaga, but I hope to add paths for enemies like Galaga (a rotation feature is now partially complete). This version has a unified Entity class, a simple particle system, and a special music system where each stage has a different version of the music loop and when changing levels the music continues on the same part of the new version of the loop where it left off on the new version. I also added the missing "About" screen (credits), "Help" screen, and ending screen.
-I originally encountered this project as an AI experiment where the ship could not be controlled. That may have been a fork of the RJ Marsan version (but with some kind of gray ships). I started reprogramming it to be usable but found there was an actual game with controls. I improved the ship graphics quite a while ago, but never thought my changes were significant enough to post, until 2018 when I remade the graphics and added more features. I made the sounds from heavily processed fireworks (recorded by me) and Audacity's brownian noise. All media is under Creative Commons Attribution Sharealike 4.0 International license--the author of current graphics is me (poikilos) but please credit music as MixMystery (artist name on soundcloud).
+I may add paths for enemies (a rotation feature is now partially complete). This version has a unified Entity class, a simple particle system, and a loop-based music system. In this music system, stage has a different version of the music loop, but it always has the same length, so when changing levels the music continues on the same part of the new version of the loop where it left off on the previous stage's version. I also added the missing "About" screen (credits), "Help" screen, and ending screen.
+I originally encountered this project as an AI experiment where the ship could not be controlled. That may have been a fork of the RJ Marsan version (but with some kind of gray ships). I started reprogramming it to be usable but found there was an actual game with controls. I improved the ship graphics quite a while ago, but never thought my changes were significant enough to post, until 2018 when I remade the graphics and added more features. I made the sounds from heavily processed fireworks (recorded by me) and Audacity's brownian noise. All media is under Creative Commons Attribution Sharealike 4.0 International license--the author of current graphics is me (poikilos) but please credit music as MixMystery (artist name on soundcloud). Some of the work from the SourceForge version (after Google Code froze) hasn't been added yet, but similar features have been added in most cases.
 Original Creator:
   Derek Mcdonald
 PYLAGA fork [python 2]

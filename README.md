@@ -1,14 +1,20 @@
-# Pylaga-py3
-Pylaga-py3 is a simple remake of a classic game with a similar name, with some differences in gameplay, written with the pygame libs. Pylaga-py3 is a fork of Pylaga that works on Python 3 (including Kivy 1.8.0 for Python 3).
+# Pylaga
+Pylaga is inspired by a classic game with a similar name, with some differences in gameplay, written with Pygame. "The overhaul has particles, explosions, sounds, music, code improvements, and targets Python 3. I originally forked a long time ago and stopped, and I forked the project from the same Google Code version that I originally worked from. RJ Marsan did more work at sourceforge.net after that, however, I made some of the same changes in ways that are more future proof (like dicts to define things instead of named imports which are no longer supported by Python)." -poikilos
 ![Pylaga screenshot](https://github.com/poikilos/pylaga/raw/master/screenshot.jpg)
 
 ## Authors
 * Music by MixMystery
-* Forked (Python 3 and new graphics, particles, no globalvars, unified Entity class, sound [own work]) by: poikilos
+* Forked (Python 3, sound [own work], new graphics, particles, no globalvars, unified Entity class) by: poikilos
 * Previously forked (pylaga [python 2]) by: RJ Marsan (gmail RJMarsan)
 * Original Creator: Derek Mcdonald
 * CRYSTAL-Regular.ttf: Felipe Munoz (CC-BY SA 4.0 International)
 * FreeSansBold.ttf: Copyleft 2002, 2003, 2005, 2008, 2009, 2010 Free Software Foundation ([GPL License](https://www.gnu.org/licenses/gpl-3.0.en.html))
+
+## Planned features
+* power-ups
+* multiple enemy swarms per stage
+* enemy attack plans with paths (and rotation) and firing patterns
+* more satisfying ending
 
 ## License
 ### Code
