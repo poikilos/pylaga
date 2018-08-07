@@ -144,7 +144,7 @@ class Entity(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
 
-    def get_v(self):
+    def get_val(self):
         if self.value <= 0:
             print("WARNING: value " + str(self.value) + " for " +
                   self.what + " (maybe you already did take_value)")

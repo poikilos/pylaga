@@ -129,13 +129,15 @@ class World:
         # self.bullet_width = 10
         self.hud_rect = pygame.Rect(0, 0, 5, 150)
         self.hud = Hud()
-        self.hud.generate_blip('score', 100,
+        self.hud.generate_blip('player.score', 100,
                                fg_color=(255,243,207),
-                               text_color=(255,243,207))
-        self.hud.generate_blip('health', self.p_max_health,
+                               text_color=(192,180,180),
+                               caption="SCORE")
+        self.hud.generate_blip('player.health', self.p_max_health,
                                fg_color=(0,255,42),
-                               text_color=(0,255,42))
-        self.statcounter = self.hud.get_blip('score')
+                               text_color=(192,180,180),
+                               caption="SHIELD")
+        self.statcounter = self.hud.get_blip('player.score')
 
     def load_file(self, name):
         return self.app.load_file(name)
@@ -154,11 +156,11 @@ class World:
         self.leftkeydown = 0
         self.rightkeydown = 0
         if self.p_unit is not None:
-            self.hud.set_blip_value('health', self.p_unit.health)
+            self.hud.set_blip_value('player.health', self.p_unit.health)
         else:
             print("WARNING: clear_vars failed to set bar since no" +
                   " player unit exists")
-        self.statcounter.set_v(0)
+        self.statcounter.set_val(0)
         self.stage.set_stage_number(-1)  # hax
         self.stage_e_bullet_odds = 100
         self.swarm.empty()
@@ -177,6 +179,7 @@ class World:
 
     # Draws all the enemys you ask it
     def generate_enemies(self):
+        print("generating enemies...")
         # Some recursive loops:
         xmin = self.world_rect.left
         xmax = self.world_rect.right
@@ -239,39 +242,39 @@ class World:
                                            0, 0)
         for sprite, bullets in e_hit.items():
             # print("removed " + str(bullet)
-            was_alive = sprite.get_is_alive()
-            prev_health = sprite.health
-            if sprite.get_is_alive():
-                sprite.set_hit(1)
-            damage = prev_health - sprite.health
-            poof = self.shield_hit_images
-            temper_sound = self.e_shield_sound
-            if damage > 0:
-                poof = self.damage_images
-                temper_sound = self.e_damage_sound
-            if was_alive:
-                for bullet in bullets:
-                    point = pygame.sprite.collide_mask(sprite,
-                                                       bullet)
-                    if ((point is not None) and
-                            (not self.particle_ban)):
-                        particle = Entity(self.app, 'particle',
-                                          poof,
-                                          part_speed,
-                                          part_angle, self.particles,
-                                          part_health,
-                                          None,
-                                          None,
-                                          anim_done_remove=True,
-                                          temper_sound=temper_sound)
-                        particle.temper = 1  # start particle death
-                        x1, y1 = sprite.get_pos()  # top left
-                        x = x1 + point[0] - particle.rect.width / 2
-                        y = y1 + point[1] - particle.rect.height / 2
-                        particle.set_xy(x, y)
-                        self.particles.add(particle)
-                # if sprite.state < 0:
-                    # sprite.set_state(0)
+            for bullet in bullets:
+                was_alive = sprite.get_is_alive()
+                prev_health = sprite.health
+                if sprite.get_is_alive():
+                    sprite.set_hit(1)
+                damage = prev_health - sprite.health
+                poof = self.shield_hit_images
+                temper_sound = self.e_shield_sound
+                if damage > 0:
+                    poof = self.damage_images
+                    temper_sound = self.e_damage_sound
+                if not was_alive:
+                    break
+                point = pygame.sprite.collide_mask(sprite,
+                                                   bullet)
+                if ((point is not None) and
+                        (not self.particle_ban)):
+                    particle = Entity(self.app, 'particle',
+                                      poof,
+                                      part_speed,
+                                      part_angle, self.particles,
+                                      part_health,
+                                      None,
+                                      None,
+                                      anim_done_remove=True,
+                                      temper_sound=temper_sound)
+                    particle.temper = 1  # start particle death
+                    x1, y1 = sprite.get_pos()  # top left
+                    x = x1 + point[0] - particle.rect.width / 2
+                    y = y1 + point[1] - particle.rect.height / 2
+                    particle.set_xy(x, y)
+                    self.particles.add(particle)
+            if not sprite.get_is_alive():
                 points = sprite.take_value()  # only once & if health 0
                 if points > 0:
                     self.statcounter.add_value(points)
@@ -283,21 +286,23 @@ class World:
                                            self.e_bullet_swarm,
                                            0, 0)
         for sprite, bullets in p_hit.items():
-            was_alive = sprite.get_is_alive()
-            prev_health = sprite.health
-            if sprite.get_is_alive():
-                sprite.set_hit(1)
-            damage = prev_health - sprite.health
-            poof = self.shield_hit_images
-            temper_sound = self.e_shield_sound
-            if damage > 0:
-                poof = self.damage_images
-                temper_sound = self.e_damage_sound
             for bullet in bullets:
+                was_alive = sprite.get_is_alive()
+                prev_health = sprite.health
+                if sprite.get_is_alive():
+                    sprite.set_hit(1)
+                damage = prev_health - sprite.health
+                poof = self.shield_hit_images
+                temper_sound = self.p_shield_sound
+                if damage > 0:
+                    poof = self.damage_images
+                    temper_sound = self.p_damage_sound
+                    self.hud.set_blip_value('player.health',
+                                            self.p_unit.health)
                 # New in pygame 1.8.0:
                 point = pygame.sprite.collide_mask(sprite, bullet)
-                if not sprite.get_is_alive():
-                    continue
+                if not was_alive:
+                    break
                 if (point is not None) and (not self.particle_ban):
                     particle = Entity(self.app, 'particle',
                                       poof,
@@ -314,14 +319,12 @@ class World:
                     y = y1 + point[1] - particle.rect.height / 2
                     particle.set_xy(x, y)
                     self.particles.add(particle)
-            if sprite.get_is_alive():  # self.p_unit
-                sprite.set_hit(1)
-                self.hud.set_blip_value('health', self.p_unit.health)
 
         # if pygame.sprite.spritecollideany(self.p_unit,
                                           # self.e_bullet_swarm):
             # self.p_unit.set_hit(1)
-            # self.hud.set_blip_value('health', self.p_unit.health)
+            # self.hud.set_blip_value('player.health',
+            #                         self.p_unit.health)
 
     # if there are no enemys left, go to the next stage
     def check_done(self):
@@ -366,7 +369,7 @@ class World:
 
     # major hack just to get this thing playable..... sorry
     def again(self):
-        if self.hud.get_blip_value('health') <= 0:
+        if self.hud.get_blip_value('player.health') <= 0:
             self.particle_ban = True
         if self.p_unit.get_is_decayed():
             self.particle_ban = True

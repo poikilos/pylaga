@@ -74,14 +74,22 @@ class Menus:
         rect.topleft = pos
         return rect
 
-    def show_dialog(self, menu_strings, cursor_spin=0.0):
+    def show_dialog(self, menu_strings, cursor_spin=0.0,
+                    open_page=None, caption=None,
+                    caption_color=(255, 255, 255)):
         ret = True
+
         self.clear_screen()
         pygame.display.flip()
         pygame.mouse.set_visible(True)  # TODO: only after first time
         pygame.event.set_grab(False)  # TODO: only after first time
 
-        menu = Menu(menu_strings, self)
+        menu = Menu(menu_strings, self, open_page=open_page,
+                    caption=caption, caption_color=caption_color)
+        if menu.open_page is not None:
+            menu.draw_menu_buttons(['BACK'], menu.open_page)
+            menu.open_page = None
+
         menu.cursor_spin = cursor_spin
         selection = None
         while not self.get_bool('exit'):

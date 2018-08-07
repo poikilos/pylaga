@@ -49,6 +49,10 @@ class Stage:
         if self.hax:
             self.stages = [
                 {
+                    'x_e_count':1, 'y_e_count':1, 'e':'cship', 'e_h':1,
+                    'music':'stage5.ogg'
+                },
+                {
                     'x_e_count':1, 'y_e_count':1, 'e':'bship', 'e_h':1,
                     'music':'stage5.ogg'
                 }

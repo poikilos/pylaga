@@ -145,13 +145,13 @@ class Blip(pygame.sprite.Sprite):
             self.is_dirty = True
             self.update_bar()
 
-    def set_v(self, val):
+    def set_val(self, val):
         if val != self.val:
             self.is_dirty = True
             self.update_bar()
         self.val = val
 
-    def get_v(self):
+    def get_val(self):
         return self.val
 
     def get_is_dirty(self):
@@ -225,10 +225,10 @@ class Hud(pygame.sprite.Group):
         self.add(new_blip)  # add to spritegroup so gets drawn
 
     def set_blip_value(self, name, v):
-        self.blips[name].set_v(v)
+        self.blips[name].set_val(v)
 
     def get_blip_value(self, name):
-        return self.blips[name].get_v()
+        return self.blips[name].get_val()
 
     def get_blip(self, name):
         return self.blips[name]

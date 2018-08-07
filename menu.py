@@ -29,12 +29,18 @@ class Menu:
                  readable_font_size=14,
                  fg_color=(195, 227, 247),
                  bg_color=(0, 0, 0),
-                 aa=True):
+                 aa=True, open_page=None, caption=None,
+                 caption_color=(255, 255, 255)):
         print("creating menu: " + str(menu_strings))
+        self.caption = caption
+        self.caption_color = caption_color
+        self.caption_img = None
+        self.caption_rect = None
         self.menu_strings = menu_strings
+        self.open_page = open_page
         self.delay_count = 0  # waiting to show lines of scrolling text
         self.aa = aa
-        self.page_name = None
+        self.page_name = open_page
         self.fg_color = fg_color
         self.bg_color = bg_color
         self.menus = menus
@@ -56,6 +62,31 @@ class Menu:
                                               self.readable_font_size)
         self.font = pygame.font.Font(font_name, self.font_size)
         self.draw_menu_buttons(menu_strings, None)
+        self.update_caption()  # must be done after setting self.menus
+
+    def set_caption(self, caption):
+        self.caption = caption
+        self.update_caption()
+
+    def update_caption(self):
+        if self.caption is not None:
+            if ((self.caption_img is None) or
+                    (self.rendered_caption != self.caption)):
+                w, h = self.menus.screen.get_size()
+                self.caption_img = self.font.render(self.caption,
+                                                    self.aa,
+                                                    self.caption_color)
+                self.caption_rect = self.caption_img.get_rect()
+                self.offset_x = (w - self.caption_rect.width) / 2
+                self.offset_y = int(h / 2 -
+                                    # self.shipselectorsize[1] +
+                                    self.spacing)
+                self.caption_rect.move_ip(self.offset_x, self.offset_y)
+                self.rendered_caption = self.caption
+        else:
+            self.caption_img = None
+            self.caption_rect = None
+            self.rendered_caption = None
 
     def draw_menu_buttons(self, menu_strings, page_name, top=None,
             change_page=True):
@@ -68,6 +99,7 @@ class Menu:
         if menu_strings is not None:
             self.menu_strings = menu_strings
         self.menus.screen.fill(self.bg_color)
+        self.update_caption()
         i = 0
         w, h = self.menus.screen.get_size()
         for entry_s in self.menu_strings:
@@ -123,6 +155,8 @@ class Menu:
         i = 0
         self.menus.screen.blit(self.menus.logo_image,
                                self.menus.logo_image.get_rect())
+        if self.caption_img is not None:
+            self.menus.screen.blit(self.caption_img, self.caption_rect)
         for entry_img in self.entry_imgs:
             self.menus.screen.blit(entry_img, self.menu_rects[i])
             i += 1

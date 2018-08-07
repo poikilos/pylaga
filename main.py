@@ -39,7 +39,7 @@ class App:
         self.settings['sound_system'] = True
         self.settings['stage_music'] = True  # TODO: implement this
         self.settings['music'] = True
-        self.settings['music_vol'] = .2
+        self.settings['music_vol'] = .4
         self.settings['sounds'] = True  # TODO: implement this
         # pygame.mixer.init(frequency=44100, size=-16, channels=2,
                           # buffer=4096)
@@ -133,28 +133,39 @@ class App:
         print("starting world...")
         self.world.start(self.menus)
         tries = 1
+        open_page = None
+        caption = None
         retry_menu_strings = ["RETRY", "ABOUT", "HELP", "EXIT",
-                             "Score: %s" %
-                             self.world.statcounter.get_v()
+                              "Score: %s" %
+                              self.world.statcounter.get_val()
         ]
         if self.world.won:
-            retry_menu_strings.insert(0, self.world.won_msg)
+            open_page = 'ABOUT'
+            caption = self.world.won_msg
+            # retry_menu_strings.insert(0, self.world.won_msg)
         else:
-            retry_menu_strings.insert(0, 'GAME OVER')
+            caption = 'GAME OVER'
+            # retry_menu_strings.insert(0, 'GAME OVER')
 
         while ((not self.menus.get_bool('exit')) and
                (self.menus.show_dialog(retry_menu_strings,
-                                       cursor_spin=-1.0))):
+                                       cursor_spin=-1.0,
+                                       open_page=open_page,
+                                       caption=caption))):
             print("starting world (tries: " + str(tries) + ")...")
             self.world.start(self.menus)
+            open_page = None
             retry_menu_strings = ["RETRY", "ABOUT", "HELP", "EXIT",
                                  "Score: %s" %
-                                 self.world.statcounter.get_v()
+                                 self.world.statcounter.get_val()
             ]
             if self.world.won:
-                retry_menu_strings.insert(0, self.world.won_msg)
+                open_page = 'ABOUT'
+                caption = self.world.won_msg
+                # retry_menu_strings.insert(0, self.world.won_msg)
             else:
-                retry_menu_strings.insert(0, 'GAME OVER')
+                caption = 'GAME OVER'
+                # retry_menu_strings.insert(0, 'GAME OVER')
             tries += 1
         self.world.on_exit()
 
